@@ -1,16 +1,18 @@
 const std = @import("std");
 const Game = @import("game.zig").Game;
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
     // init game
-    var game = Game.init() catch |err| {
+    var game = Game.init(allocator) catch |err| {
         std.debug.print("Failed to initialize game: {}\n", .{err});
         return;
     };
     defer game.deinit();
 
     // run game!
-    try stdout.print("Starting game!\n", .{});
+    std.debug.print("Starting game!\n", .{});
     game.run();
 }

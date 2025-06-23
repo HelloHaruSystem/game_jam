@@ -27,29 +27,37 @@ pub const PlayerAnimation = struct {
     }
 
     pub fn update(self: *PlayerAnimation, player: *const Player, delta_time: f32) void {
-        if (player.is_moving) {
-            self.frame_timer += delta_time;
-            if (self.frame_timer >= self.frame_duration) {
-                self.current_frame = WALK_START_FRAME +
-                    ((self.current_frame - WALK_START_FRAME + 1) % WALK_FRAME_COUNT);
-                self.frame_timer = 0.0;
-            }
-        } else {
-            self.current_frame = IDLE_FRAME;
+    if (player.is_moving) {
+        self.frame_timer += delta_time;
+        if (self.frame_timer >= self.frame_duration) {
+            self.current_frame = WALK_START_FRAME + 
+                ((self.current_frame - WALK_START_FRAME + 1) % WALK_FRAME_COUNT);
             self.frame_timer = 0.0;
         }
+        if (self.current_frame < WALK_START_FRAME) {
+            self.current_frame = WALK_START_FRAME;
+        }
+    } else {  // Add this missing closing brace and else
+        self.current_frame = IDLE_FRAME;
+        self.frame_timer = 0.0;
     }
+}
 
     pub fn draw(self: *PlayerAnimation, player: *const Player, texture: rl.Texture2D) void {
-        const frames_per_row = if (player.is_moving) WALK_START_FRAME else IDLE_FRAME_COUNT;
+        const frames_per_row: u32 = if (player.is_moving) WALK_START_FRAME else IDLE_FRAME_COUNT;
 
         const source_rectangle = rl.Rectangle{
             .x = @floatFromInt((self.current_frame % frames_per_row) * 32), // hardcoded 32 because the sprite is 32x32
             .y = @floatFromInt((self.current_frame / frames_per_row) * 32),
-            .width = if (player.facing_left) -32 else 32,
+            .width = if (player.facing_left) -32 else 32,                   // flip horizontally if facing left
             .height = 32,
         };
 
         rl.DrawTextureRec(texture, source_rectangle, player.position, rl.WHITE);
+    }
+
+    pub fn resetFrame(self: *PlayerAnimation) void {
+        self.current_frame = IDLE_FRAME;
+        self.frame_timer = 0.0;
     }
 };
