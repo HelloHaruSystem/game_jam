@@ -62,6 +62,7 @@ pub const Game = struct {
             },
             .playing => {
                 rl.HideCursor();
+                mouseWindowLock();
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
             },
@@ -104,6 +105,20 @@ pub const Game = struct {
             .game_over => {
                 rl.ClearBackground(rl.SKYBLUE);
             },
+        }
+    }
+
+    // TODO: fix this or remove
+    // this doesn't work
+    fn mouseWindowLock() void {
+        // keep mouse locked to window bounds
+        const mouse_position = rl.GetMousePosition();
+        if (mouse_position.x < 0 or mouse_position.x > win_const.WINDOW_WIDTH or
+            mouse_position.y < 0 or mouse_position.y > win_const.WINDOW_HEIGHT)
+        {
+            const clamped_x = std.math.clamp(mouse_position.x, 0, @as(f32, @floatFromInt(win_const.WINDOW_WIDTH)));
+            const clamped_y = std.math.clamp(mouse_position.y, 0, @as(f32, @floatFromInt(win_const.WINDOW_HEIGHT)));
+            rl.SetMousePosition(@as(c_int, @intFromFloat(clamped_x)), @as(c_int, @intFromFloat(clamped_y)));
         }
     }
 };
