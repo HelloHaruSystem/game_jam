@@ -10,17 +10,15 @@ pub const PlayerAnimation = struct {
     frame_duration: f32, // how long each frame will show
     
 
-    // constants for the player animation
-    const IDLE_FRAME = 4;
-    const IDLE_FRAME_COUNT = 5;
-
-    const WALK_START_FRAME = 3;
-    const WALK_FRAME_COUNT = 7;
-
+    // Row-based animation (0-indexed)
+    const IDLE_ROW = 4;
+    const WALK_ROW = 3;
+    const WALK_FRAME_COUNT = 8; // 8 frames for walking 0-7
+    const IDLE_FRAME_COUNT = 6; // 6 frames for idle animation 0-5+
 
     pub fn init() PlayerAnimation {
         return PlayerAnimation{
-            .current_frame = IDLE_FRAME,
+            .current_frame = 0,
             .frame_timer = 0.0,
             .frame_duration = 0.15, // 7fps animation
         };
@@ -30,26 +28,25 @@ pub const PlayerAnimation = struct {
     if (player.is_moving) {
         self.frame_timer += delta_time;
         if (self.frame_timer >= self.frame_duration) {
-            self.current_frame = WALK_START_FRAME + 
-                ((self.current_frame - WALK_START_FRAME + 1) % WALK_FRAME_COUNT);
+            self.current_frame = (self.current_frame + 1) % WALK_FRAME_COUNT;
             self.frame_timer = 0.0;
         }
-        if (self.current_frame < WALK_START_FRAME) {
-            self.current_frame = WALK_START_FRAME;
+    } else { 
+        self.frame_timer += delta_time;
+        if (self.frame_timer >= self.frame_duration) {
+            self.current_frame = (self.current_frame + 1) % IDLE_FRAME_COUNT;
+            self.frame_timer = 0.0;
         }
-    } else {  // Add this missing closing brace and else
-        self.current_frame = IDLE_FRAME;
-        self.frame_timer = 0.0;
     }
 }
 
     pub fn draw(self: *PlayerAnimation, player: *const Player, texture: rl.Texture2D) void {
-        const frames_per_row: u32 = if (player.is_moving) WALK_START_FRAME else IDLE_FRAME_COUNT;
+        const row: u32 = if (player.is_moving) WALK_ROW else IDLE_ROW;
 
         const source_rectangle = rl.Rectangle{
-            .x = @floatFromInt((self.current_frame % frames_per_row) * 32), // hardcoded 32 because the sprite is 32x32
-            .y = @floatFromInt((self.current_frame / frames_per_row) * 32),
-            .width = if (player.facing_left) -32 else 32,                   // flip horizontally if facing left
+            .x = @floatFromInt(self.current_frame * 32), // TODO: add constants instead of hard coding this (it's 32 because of the sprites being 32x32)
+            .y = @floatFromInt(row * 32),
+            .width = if (player.facing_left) -32 else 32,
             .height = 32,
         };
 
@@ -57,7 +54,7 @@ pub const PlayerAnimation = struct {
     }
 
     pub fn resetFrame(self: *PlayerAnimation) void {
-        self.current_frame = IDLE_FRAME;
+        self.current_frame = 0;
         self.frame_timer = 0.0;
     }
 };

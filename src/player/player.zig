@@ -18,7 +18,7 @@ pub const Player = struct {
         return Player{
             .animation = PlayerAnimation.init(),
             .position = rl.Vector2{ .x = 640, .y = 360, }, // center for the 1280x720 screen
-            .speed = 1.0, 
+            .speed = 200.0, 
             .fire_speed = 1.0,
             .facing_left = false,
             .is_moving = false,
