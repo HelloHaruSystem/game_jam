@@ -5,12 +5,16 @@ const rl = @cImport({
 
 const Input = @import("player/input.zig").Input;
 const Player = @import("player/player.zig").Player;
+const AimCircle = @import("player/aimCircle.zig").AimCricle;
+const GameState = @import("utils/gameState.zig").GameState;
 const textureLoader = @import("utils/textureLoader.zig");
-const win_const =  @import("utils/constants/screenAndWindow.zig");
+const win_const = @import("utils/constants/screenAndWindow.zig");
 
 pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
+    aim_circle: AimCircle,
+    current_state: GameState,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
@@ -21,10 +25,14 @@ pub const Game = struct {
         const player = Player.init();
         // init player texture
         const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
+        // init aim arrow
+        const aim_circle = AimCircle.init();
 
         return Game{
             .player = player,
             .player_texture = player_texture,
+            .aim_circle = aim_circle,
+            .current_state = GameState.playing, // TODO: when menu is added start at the start menu
             .allocator = allocator,
         };
     }
@@ -34,8 +42,8 @@ pub const Game = struct {
         rl.CloseWindow();
     }
 
-    pub fn run (self: *Game) void {
-        while(!rl.WindowShouldClose()) {
+    pub fn run(self: *Game) void {
+        while (!rl.WindowShouldClose()) {
             self.update();
             self.draw();
         }
@@ -43,17 +51,59 @@ pub const Game = struct {
 
     pub fn update(self: *Game) void {
         const input = Input.update();
-        const delta_time = rl.GetFrameTime();
-        self.player.update(input, delta_time);
+
+        // TODO: do functions for each case
+        switch (self.current_state) {
+            .start_menu => {
+                rl.ShowCursor();
+            },
+            .pause_menu => {
+                rl.ShowCursor();
+            },
+            .playing => {
+                rl.HideCursor();
+                const delta_time = rl.GetFrameTime();
+                self.player.update(input, delta_time);
+            },
+            .round_break => {
+                rl.ShowCursor();
+            },
+            .shopping => {
+                rl.ShowCursor();
+            },
+            .game_over => {
+                rl.ShowCursor();
+            },
+        }
     }
 
+    // TODO: make a function for each case
     pub fn draw(self: *Game) void {
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-        rl.ClearBackground(rl.SKYBLUE);
-
-        // draw the player character
-        self.player.draw(self.player_texture);
+        switch (self.current_state) {
+            .start_menu => {
+                rl.ClearBackground(rl.SKYBLUE);
+            },
+            .pause_menu => {
+                rl.ClearBackground(rl.SKYBLUE);
+            },
+            .playing => {
+                rl.ClearBackground(rl.SKYBLUE);
+                // draw the player character and circle
+                self.player.draw(self.player_texture);
+                self.aim_circle.draw(self.player.position);
+            },
+            .round_break => {
+                rl.ClearBackground(rl.SKYBLUE);
+            },
+            .shopping => {
+                rl.ClearBackground(rl.SKYBLUE);
+            },
+            .game_over => {
+                rl.ClearBackground(rl.SKYBLUE);
+            },
+        }
     }
 };
