@@ -5,14 +5,14 @@ const rl = @cImport({
 
 const Input = @import("player/input.zig").Input;
 const Player = @import("player/player.zig").Player;
-const Arrow = @import("player/arrow.zig").Arrow;
+const AimCircle = @import("player/aimCircle.zig").AimCricle;
 const textureLoader = @import("utils/textureLoader.zig");
 const win_const = @import("utils/constants/screenAndWindow.zig");
 
 pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
-    arrow: Arrow,
+    aim_circle: AimCircle,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
@@ -24,12 +24,12 @@ pub const Game = struct {
         // init player texture
         const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
         // init aim arrow
-        const arrow = Arrow.init();
+        const aim_circle = AimCircle.init();
 
         return Game{
             .player = player,
             .player_texture = player_texture,
-            .arrow = arrow,
+            .aim_circle = aim_circle,
             .allocator = allocator,
         };
     }
@@ -60,6 +60,6 @@ pub const Game = struct {
 
         // draw the player character and arrow
         self.player.draw(self.player_texture);
-        self.arrow.draw(self.player.position);
+        self.aim_circle.draw(self.player.position);
     }
 };
