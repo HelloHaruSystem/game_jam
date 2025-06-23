@@ -5,12 +5,14 @@ const rl = @cImport({
 
 const Input = @import("player/input.zig").Input;
 const Player = @import("player/player.zig").Player;
+const Arrow = @import("player/arrow.zig").Arrow;
 const textureLoader = @import("utils/textureLoader.zig");
-const win_const =  @import("utils/constants/screenAndWindow.zig");
+const win_const = @import("utils/constants/screenAndWindow.zig");
 
 pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
+    arrow: Arrow,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
@@ -21,10 +23,13 @@ pub const Game = struct {
         const player = Player.init();
         // init player texture
         const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
+        // init aim arrow
+        const arrow = Arrow.init();
 
         return Game{
             .player = player,
             .player_texture = player_texture,
+            .arrow = arrow,
             .allocator = allocator,
         };
     }
@@ -34,8 +39,8 @@ pub const Game = struct {
         rl.CloseWindow();
     }
 
-    pub fn run (self: *Game) void {
-        while(!rl.WindowShouldClose()) {
+    pub fn run(self: *Game) void {
+        while (!rl.WindowShouldClose()) {
             self.update();
             self.draw();
         }
@@ -53,7 +58,8 @@ pub const Game = struct {
 
         rl.ClearBackground(rl.SKYBLUE);
 
-        // draw the player character
+        // draw the player character and arrow
         self.player.draw(self.player_texture);
+        self.arrow.draw(self.player.position);
     }
 };
