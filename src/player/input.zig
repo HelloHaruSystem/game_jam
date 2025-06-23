@@ -11,11 +11,10 @@ pub const Input = struct {
 
     pub fn update() Input {
         return Input{
-            .move_up = rl.IsKeyDown (rl.KEY_W or rl.KEY_UP),
-            .move_down = rl.IsKeyDown (rl.KEY_S or rl.KEY_DOWN),
-            .move_left = rl.IsKeyDown (rl.KEY_A or rl.KEY_LEFT),
-            .move_right = rl.IsKeyDown (rl.KEY_D or rl.KEY_RIGHT),
-            .shoot = rl.IsKeyDown (rl.KEY_SPACE),
+            .move_up = rl.IsKeyDown(rl.KEY_W) or rl.IsKeyDown(rl.KEY_UP),
+            .move_down = rl.IsKeyDown(rl.KEY_S) or rl.IsKeyDown(rl.KEY_DOWN),
+            .move_left = rl.IsKeyDown(rl.KEY_A) or rl.IsKeyDown(rl.KEY_LEFT),
+            .move_right = rl.IsKeyDown(rl.KEY_D) or rl.IsKeyDown(rl.KEY_RIGHT),
         };
     }
 
