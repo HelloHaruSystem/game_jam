@@ -84,8 +84,14 @@ pub const Enemy = struct {
     pub fn update(self: *Enemy, player_position: rl.Vector2, delta_time: f32) void {
         if (!self.active) return;
 
+        // calculate player center position
+        const player_center_position = rl.Vector2{
+            .x = player_position.x + 16,
+            .y = player_position.y + 16,
+        };
+
         // move towards player
-        self.moveTowardsPlayer(player_position, delta_time);
+        self.moveTowardsPlayer(player_center_position, delta_time);
 
         // update hit flash timer
         self.animation.update(delta_time);
