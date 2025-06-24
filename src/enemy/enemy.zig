@@ -12,31 +12,32 @@ pub const EnemyType = enum {
     boss,
 
     // TODO: all are the same sprite for now change in the future
+    // TODO: move some of these values to a file with constants for easy changes
     pub fn getStats(self: EnemyType) EnemyStats {
         return switch (self) {
             .small_fast => EnemyStats{
                 .max_health = 1,
-                .speed = 120,
+                .speed = 220,
                 .scale = 0.8,
-                .sprite_row = 0,
+                .sprite_row = 3,
             },
             .medium_normal => EnemyStats{
                 .max_health = 3,
                 .speed = 80.0,
                 .scale = 1.0,
-                .sprite_row = 0,
+                .sprite_row = 3,
             },
             .large_slow => EnemyStats{
                 .max_health = 5,
                 .speed = 50.0,
                 .scale = 1.5,
-                .sprite_row = 0,
+                .sprite_row = 3,
             },
             .boss => EnemyStats{
                 .max_health = 20,
                 .speed = 30.0,
                 .scale = 2.0,
-                .sprite_row = 0,
+                .sprite_row = 3,
             },
         };
     }
@@ -68,7 +69,8 @@ pub const Enemy = struct {
 
         return Enemy{
             .position = spawn_location,
-            .velocity = rl.Vector2{ .x = 0, .y = 0 }, //TODO: make it follow player!
+            .velocity = rl.Vector2{ .x = 0, .y = 0 },
+            .enemy_type = enemy_type,
             .current_health = stats.max_health,
             .max_health = stats.max_health,
             .speed = stats.speed,

@@ -13,7 +13,7 @@ pub const EnemyAnimation = struct {
 
     // animation constants
     const SPRITE_SIZE = 32;
-    const FRAME_COUNT = 4;
+    const FRAME_COUNT = 6;
     const HIT_FLASH_DURATION = 0.2;
 
     pub fn init() EnemyAnimation {
