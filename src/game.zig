@@ -7,6 +7,7 @@ const Input = @import("player/input.zig").Input;
 const Player = @import("player/player.zig").Player;
 const AimCircle = @import("player/aimCircle.zig").AimCricle;
 const ProjectileManager = @import("projectile/projectile.zig").ProjectileManager;
+const EnemyManager = @import("enemy/enemyManager.zig").EnemyManager;
 const GameState = @import("utils/gameState.zig").GameState;
 const textureLoader = @import("utils/textureLoader.zig");
 const win_const = @import("utils/constants/screenAndWindow.zig");
@@ -15,8 +16,10 @@ pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
     projectile_texture: rl.Texture2D,
+    enemy_texture: rl.Texture2D,
     aim_circle: AimCircle,
     projectile_manager: ProjectileManager,
+    enemy_manager:EnemyManager,
     current_state: GameState,
     allocator: std.mem.Allocator,
 
@@ -30,6 +33,8 @@ pub const Game = struct {
         const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
         // init projectile texture
         const projectile_texture = try textureLoader.loadSprite(allocator, "projectile_spritesheet.png");
+        // init enemy texture
+        const enemy_texture = try textureLoader.loadSprite(allocator, "enemy_spritesheet.png");
         // init aim arrow
         const aim_circle = AimCircle.init();
 
@@ -37,8 +42,10 @@ pub const Game = struct {
             .player = player,
             .player_texture = player_texture,
             .projectile_texture = projectile_texture,
+            .enemy_texture = enemy_texture,
             .aim_circle = aim_circle,
             .projectile_manager = ProjectileManager.init(allocator),
+            .enemy_manager = EnemyManager.init(allocator),
             .current_state = GameState.playing, // TODO: when menu is added start at the start menu
             .allocator = allocator,
         };
@@ -47,7 +54,9 @@ pub const Game = struct {
     pub fn deinit(self: *Game) void {
         textureLoader.unloadTexture(self.player_texture);
         textureLoader.unloadTexture(self.projectile_texture);
+        textureLoader.unloadTexture(self.enemy_texture);
         self.projectile_manager.deinit();
+        self.enemy_manager.deinit();
         rl.CloseWindow();
     }
 
@@ -100,6 +109,8 @@ pub const Game = struct {
                         std.debug.print("Failed to spawn projectile: {}\n", .{err});
                     }; 
                 }
+
+                self.enemy_manager.update(self.player.position, delta_time);
             },
             .round_break => {
                 rl.ShowCursor();
@@ -131,6 +142,7 @@ pub const Game = struct {
                 self.player.draw(self.player_texture);
                 self.aim_circle.draw(self.player.position);
                 self.projectile_manager.draw(self.projectile_texture);
+                self.enemy_manager.draw(self.enemy_texture);
             },
             .round_break => {
                 rl.ClearBackground(rl.SKYBLUE);
