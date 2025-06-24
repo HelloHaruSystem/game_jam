@@ -45,7 +45,7 @@ pub const EnemyAnimation = struct {
         const source_rectangle = rl.Rectangle{
             .x = @floatFromInt(self.current_frame * SPRITE_SIZE),
             .y = @floatFromInt(enemy.sprite_row * SPRITE_SIZE),
-            .width = SPRITE_SIZE,
+            .width = if (enemy.facing_left) -SPRITE_SIZE else SPRITE_SIZE,
             .height = SPRITE_SIZE,
         };
 

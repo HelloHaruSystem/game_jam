@@ -59,6 +59,7 @@ pub const Enemy = struct {
     speed: f32,
     scale: f32,
     sprite_row: u32,
+    facing_left: bool,
     active: bool,
     animation: EnemyAnimation,
 
@@ -76,6 +77,7 @@ pub const Enemy = struct {
             .speed = stats.speed,
             .scale = stats.scale,
             .sprite_row = stats.sprite_row,
+            .facing_left = false,
             .active = true,
             .animation = EnemyAnimation.init(),
         };
@@ -116,6 +118,10 @@ pub const Enemy = struct {
         const distance = std.math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
+            // update facing direction
+            // if negative the player is to the left
+            self.facing_left = dx < 0;
+
             // normalize direction and apply speed
             self.velocity.x = (dx / distance) * self.speed;
             self.velocity.y = (dy / distance) * self.speed;
