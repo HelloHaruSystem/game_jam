@@ -29,8 +29,8 @@ pub const Projectile = struct {
         if (!self.active) return ;
 
         // update position
-        self.position.x += self.velocity * delta_time;
-        self.position.y += self.velocity * delta_time;
+        self.position.x += self.velocity.x * delta_time;
+        self.position.y += self.velocity.y * delta_time;
 
         // update life time
         self.life_time += delta_time;
@@ -39,8 +39,8 @@ pub const Projectile = struct {
         }
 
         // bounds check for screen set non active when reaches outside
-        if (self.position.x < -10 or self.position.x > win_consts + 20 or
-            self.position.y < -10 or self.position.y > win_consts + 20) {
+        if (self.position.x < -10 or self.position.x > @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH + 20)) or
+            self.position.y < -10 or self.position.y > @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT + 20))) {
                 self.active = false;
         }
     }   

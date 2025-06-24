@@ -13,6 +13,8 @@ pub const Player = struct {
     fire_speed: f32,
     facing_left: bool,
     is_moving: bool,
+    fire_timer: f32,
+    fire_rate: f32,
 
     pub fn init() Player {
         return Player{
@@ -22,6 +24,8 @@ pub const Player = struct {
             .fire_speed = 1.0,
             .facing_left = false,
             .is_moving = false,
+            .fire_timer = 0.0,
+            .fire_rate = 1.5, // 1.5 shots a second
         };
     }
 
@@ -53,10 +57,23 @@ pub const Player = struct {
             self.animation.resetFrame();
         }
 
+        // update fire timer
+        if (self.fire_timer > 0) {
+            self.fire_timer -= delta_time;
+        } 
+
         self.animation.update(self, delta_time);
     }
 
     pub fn draw(self: *Player, texture: rl.Texture2D) void {
         self.animation.draw(self, texture);
+    }
+
+    pub fn canShoot(self: *Player) bool {
+        return self.fire_timer <= 0;
+    }
+
+    pub fn shoot(self: *Player) void {
+        self.fire_timer = 1.0 / self.fire_rate;
     }
 };
