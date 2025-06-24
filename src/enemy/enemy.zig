@@ -3,6 +3,8 @@ const rl = @cImport({
     @cInclude("raylib.h");
 });
 
+const EnemyAnimation = @import("../animation/enemyAnimation.zig").EnemyAnimation;
+
 pub const EnemyType = enum {
     small_fast,
     medium_normal,
@@ -57,7 +59,7 @@ pub const Enemy = struct {
     scale: f32,
     sprite_row: u32,
     active: bool,
-    hit_timer: f32,
+    animation: EnemyAnimation,
 
     // TODO: add animation file
 
@@ -73,7 +75,7 @@ pub const Enemy = struct {
             .scale = stats.scale,
             .sprite_row = stats.sprite_row,
             .active = true,
-            .hit_timer = 0.0,
+            .animation = EnemyAnimation.init(),
         };
     }
 
@@ -84,7 +86,7 @@ pub const Enemy = struct {
         self.moveTowardsPlayer(player_position, delta_time);
 
         // update hit flash timer
-        //TODO: do this in animation file
+        self.animation.update(delta_time);
 
         // check if enemy should be removed
         if (self.current_health == 0) {
@@ -92,15 +94,18 @@ pub const Enemy = struct {
         }
     }
 
-    pub fn draw(_: *Enemy) void {
+    pub fn draw(self: *Enemy, texture: rl.Texture2D) void {
+        if (!self.active) return;
 
+        // call draw function from the animation file
+        self.animation.draw(self, texture);
     }
 
     pub fn moveTowardsPlayer(self: *Enemy, player_position: rl.Vector2, delta_time: f32) void {
         // calculate direction to player
         const dx = player_position.x - self.position.x;
         const dy = player_position.y - self.position.y;
-        const distance = std.math.atan2(dy, dx);
+        const distance = std.math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
             // normalize direction and apply speed
@@ -113,11 +118,22 @@ pub const Enemy = struct {
         }
     }
 
-    pub fn takeDamge(self: *Enemy, damage: u32) void {
+    pub fn takeDamage(self: *Enemy, damage: u32) void {
         if (self.current_health > damage) {
             self.current_health -= damage;
         } else {
             self.current_health = 0;
         }
+
+        // start the hit flash from animation file
+        self.animation.startHitFlash();
+    }
+
+    pub fn getBounds(self: *const Enemy) rl.Rectangle {
+        return self.animation.getBounds(self);
+    }
+
+    pub fn isDead(self: *const Enemy) bool {
+        return !self.active or self.current_health == 0;
     }
 };
