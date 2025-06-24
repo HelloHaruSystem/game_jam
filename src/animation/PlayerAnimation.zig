@@ -35,7 +35,7 @@ pub const PlayerAnimation = struct {
             .frame_duration = 0.15,             // 7fps animation
             .current_state = .idle,  // start at idle state
             .attack_timer = 0.0,
-            .attack_duration = 0.06,            // attack faster then moving
+            .attack_duration = 0.03,            // attack faster then moving
             .projectile_spawned = false,
         };
     }

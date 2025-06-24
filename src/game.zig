@@ -73,9 +73,10 @@ pub const Game = struct {
 
                 // handle shooting
                 //  TODO: move this to it's own function
-                if (input.shoot and self.player.canShoot()) {
+                if (input.shoot and self.player.canShoot() and !self.player.animation.isAttacking()) {
                     // start attack animation
                     self.player.animation.startAttack();
+                    self.player.shoot();
                 }
 
                 // check if projectile should spawn during animation
