@@ -13,6 +13,7 @@ pub const Player = struct {
     fire_speed: f32,
     facing_left: bool,
     is_moving: bool,
+    is_attacking: bool,
     fire_timer: f32,
     fire_rate: f32,
 
@@ -24,6 +25,7 @@ pub const Player = struct {
             .fire_speed = 1.0,
             .facing_left = false,
             .is_moving = false,
+            .is_attacking = false,
             .fire_timer = 0.0,
             .fire_rate = 1.5, // 1.5 shots a second
         };
@@ -35,14 +37,16 @@ pub const Player = struct {
         const was_moving = self.is_moving;
         self.is_moving = input.hasMovement();
 
-        // update the direction based on horizontal movement
-        if (movement.x < 0) {
-            self.facing_left = true;     // facing left
-        } else if (movement.x > 0) {
-            self.facing_left = false;    // facing right
+        // only update direction if not attacking
+        if (!self.animation.isAttacking()) {
+            if (movement.x < 0) {
+                self.facing_left = true;     // facing left
+            } else if (movement.x > 0) {
+                self.facing_left = false;    // facing right
+            }
+            // in cae of only vertical moving keep the current direction
         }
-        // in cae of only vertical moving keep the current direction
-
+        
         if (self.is_moving) {
             const new_x = self.position.x + movement.x * self.speed * delta_time;
             const new_y = self.position.y + movement.y * self.speed * delta_time;
@@ -53,7 +57,8 @@ pub const Player = struct {
         }
 
         // reset frame when switching between idle and walking for smooths transitions (nice)
-        if (was_moving != self.is_moving) {
+        // but not when attacking
+        if (was_moving != self.is_moving and !self.animation.isAttacking()) {
             self.animation.resetFrame();
         }
 

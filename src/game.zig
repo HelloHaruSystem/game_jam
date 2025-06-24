@@ -74,18 +74,25 @@ pub const Game = struct {
                 // handle shooting
                 //  TODO: move this to it's own function
                 if (input.shoot and self.player.canShoot()) {
-                    self.player.shoot();
+                    // start attack animation
+                    self.player.animation.startAttack();
+                }
+
+                // check if projectile should spawn during animation
+                if (self.player.animation.shouldSpawnProjectile()) {
                     const mouse_position = rl.GetMousePosition();
                     const player_center = rl.Vector2{
                         .x = self.player.position.x + 16,
-                        .y = self.player.position.y + 16, // 16 for center of the player
+                        .y = self.player.position.y + 16,
                     };
 
                     // spawn the projectile
                     // TODO: get the speed from player
                     // TODO: add fire rate limit
                     // TODO: error handle this properly
-                    self.projectile_manager.spawn(player_center, mouse_position, 400.0) catch {}; 
+                    self.projectile_manager.spawn(player_center, mouse_position, 400.0) catch |err| {
+                        std.debug.print("Failed to spawn projectile: {}\n", .{err});
+                    }; 
                 }
             },
             .round_break => {

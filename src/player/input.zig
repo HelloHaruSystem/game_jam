@@ -23,6 +23,10 @@ pub const Input = struct {
         return self.move_up or self.move_down or self.move_left or self.move_right;
     }
 
+    pub fn hasAttacking(self: Input, can_shoot: bool) bool {
+        return self.shoot and can_shoot;
+    }
+
     pub const MovementVector = struct {
         x: f32,
         y: f32,
