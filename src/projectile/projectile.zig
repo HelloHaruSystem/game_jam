@@ -3,6 +3,7 @@ const rl = @cImport({
     @cInclude("raylib.h");
 });
 
+const ProjectileAnimation = @import("../animation/projectileAnimation.zig").ProjectileAnimation;
 const win_consts = @import("../utils/constants/screenAndWindow.zig");
 
 pub const Projectile = struct {
@@ -11,6 +12,7 @@ pub const Projectile = struct {
     active: bool,
     life_time: f32,
     time_to_live: f32,
+    animation: ProjectileAnimation,
 
     pub fn init(start_position: rl.Vector2, direction: rl.Vector2, speed: f32) Projectile {
         return Projectile{
@@ -22,6 +24,7 @@ pub const Projectile = struct {
             .active = true,
             .life_time = 0.0,
             .time_to_live = 3.0, // projectile dies after 3 seconds
+            .animation = ProjectileAnimation.init(),
         };
     }
 
@@ -38,18 +41,19 @@ pub const Projectile = struct {
             self.active = false;
         }
 
+        // update animation
+        self.animation.update(delta_time);
+
         // bounds check for screen set non active when reaches outside
-        if (self.position.x < -10 or self.position.x > @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH + 20)) or
-            self.position.y < -10 or self.position.y > @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT + 20))) {
+        if (self.position.x < - 20 or self.position.x > @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH + 20)) or
+            self.position.y < - 20 or self.position.y > @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT + 20))) {
                 self.active = false;
         }
     }   
 
-    pub fn draw(self: *Projectile) void {
-        if (!self.active) return;
-
-        // TODO: add animation for the projectile for now it will be a circle
-        rl.DrawCircle(@intFromFloat(self.position.x), @intFromFloat(self.position.y), 3, rl.PURPLE);
+    pub fn draw(self: *Projectile, texture: rl.Texture2D) void {
+        if (!self.active) return; 
+        self.animation.draw(self.position, self.velocity, texture);
     }
 };
 
@@ -104,9 +108,9 @@ pub const ProjectileManager = struct {
         }
     }
 
-    pub fn draw(self: *const ProjectileManager) void {
+    pub fn draw(self: *const ProjectileManager, texture: rl.Texture2D) void {
         for (self.Projectiles.items) |*projectile| {
-            projectile.draw();
+            projectile.draw(texture);
         }
     }
 

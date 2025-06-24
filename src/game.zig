@@ -14,6 +14,7 @@ const win_const = @import("utils/constants/screenAndWindow.zig");
 pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
+    projectile_texture: rl.Texture2D,
     aim_circle: AimCircle,
     projectile_manager: ProjectileManager,
     current_state: GameState,
@@ -27,12 +28,15 @@ pub const Game = struct {
         const player = Player.init();
         // init player texture
         const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
+        // init projectile texture
+        const projectile_texture = try textureLoader.loadSprite(allocator, "projectile_spritesheet.png");
         // init aim arrow
         const aim_circle = AimCircle.init();
 
         return Game{
             .player = player,
             .player_texture = player_texture,
+            .projectile_texture = projectile_texture,
             .aim_circle = aim_circle,
             .projectile_manager = ProjectileManager.init(allocator),
             .current_state = GameState.playing, // TODO: when menu is added start at the start menu
@@ -42,6 +46,7 @@ pub const Game = struct {
 
     pub fn deinit(self: *Game) void {
         textureLoader.unloadTexture(self.player_texture);
+        textureLoader.unloadTexture(self.projectile_texture);
         self.projectile_manager.deinit();
         rl.CloseWindow();
     }
@@ -125,7 +130,7 @@ pub const Game = struct {
                 // draw the player character and circle
                 self.player.draw(self.player_texture);
                 self.aim_circle.draw(self.player.position);
-                self.projectile_manager.draw();
+                self.projectile_manager.draw(self.projectile_texture);
             },
             .round_break => {
                 rl.ClearBackground(rl.SKYBLUE);
