@@ -69,9 +69,14 @@ pub const EnemyManager = struct {
             const player_bounds = player.getBounds();
 
             if (rl.CheckCollisionRecs(enemy_bounds, player_bounds)) {
+                // pass the enemy position to use it for knock back
+                const enemy_center = rl.Vector2{
+                    .x = e.position.x + 16, // 16 for center of the 32x32 sprite
+                    .y = e.position.y + 16,
+                };
+                
                 //TODO: make some enemies deal less or more damage
-                player.takeDamage(1);
-
+                player.takeDamage(1, enemy_center);
                 break; // only one enemy can hit per frame
             }
         }

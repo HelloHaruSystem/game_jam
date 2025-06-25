@@ -25,6 +25,10 @@ pub const Player = struct {
     damage_cooldown: f32,   // how long the invincibility will last 
     is_invincible: bool,    // for the visual indicator
 
+    // knock back stuff
+    knock_back_velocity: rl.Vector2,
+    knock_back_friction: f32,
+
     pub fn init() Player {
         return Player{
             .animation = PlayerAnimation.init(),
@@ -43,9 +47,14 @@ pub const Player = struct {
             .damager_timer = 0.0,
             .damage_cooldown = 1.0,     // 1 second
             .is_invincible = false,
+
+            // knockback stuff
+            .knock_back_velocity = rl.Vector2{ .x = 0.0, .y = 0.0 },
+            .knock_back_friction = 8.0, // the more the faster decay
         };
     }
 
+    // TODO: split this function up into smaller helper functions
     pub fn update(self: *Player, input: Input, delta_time: f32) void {
         // check if player is trying to move
         const movement = input.getMovementVector();
@@ -61,19 +70,40 @@ pub const Player = struct {
             }
             // in cae of only vertical moving keep the current direction
         }
-        
-        if (self.is_moving) {
-            // calculate new position before moving to check bounds
-            const new_position = rl.Vector2{
-                .x = self.position.x + movement.x * self.speed * delta_time,
-                .y = self.position.y + movement.y * self.speed * delta_time,
-            };
-            // TODO: move sprite_size to a file with constants
-            const sprite_size = 32.0;
 
-            // screen boundary check with clamp to make sure the player stays inside the bounds of the window
-            // then applies the new positions
-            self.position = clampToScreen(new_position, sprite_size);
+        // calculate movement (combine input + knock back)
+        var total_movement = rl.Vector2{ .x = 0, .y = 0, };
+        
+        // add player input movement
+        if (self.is_moving) {
+            total_movement.x = movement.x * self.speed * delta_time;
+            total_movement.y = movement.y * self.speed * delta_time;
+        }
+
+        // add knock back movement
+        total_movement.x += self.knock_back_velocity.x * delta_time;
+        total_movement.y += self.knock_back_velocity.y * delta_time;
+
+        // apply the total movement
+        if (total_movement.x != 0.0 or total_movement.y != 0.0) {
+            const new_position = rl.Vector2{
+                .x = self.position.x + total_movement.x,
+                .y = self.position.y + total_movement.y,
+            };
+            const player_sprite_size = 32.0;   // TODO: move this to a file with constants
+            self.position = clampToScreen(new_position, player_sprite_size);
+        }
+
+        // apply the knock back friction
+        self.knock_back_velocity.x *= (1.0 - self.knock_back_friction * delta_time);
+        self.knock_back_velocity.y *= (1.0 - self.knock_back_friction * delta_time);
+
+        // stop very small knock backs
+        if (@fabs(self.knock_back_velocity.x) < 1.0) {
+            self.knock_back_velocity = 0.0;
+        }
+        if (@fabs(self.knock_back_velocity.y) < 1.0) {
+            self.knock_back_velocity = 0.0;
         }
 
         // reset frame when switching between idle and walking for smooths transitions (nice)
@@ -138,7 +168,7 @@ pub const Player = struct {
         };
     }
 
-    pub fn takeDamage(self: *Player, damage: u32) void {
+    pub fn takeDamage(self: *Player, damage: u32, from_position: rl.Vector2) void {
         if (self.is_invincible) return;
 
         // debug
@@ -154,11 +184,26 @@ pub const Player = struct {
         self.damager_timer = self.damage_cooldown;
         self.is_invincible = true;
 
-        // TODO: add screen shake, danage sound, and a knockback!
+        // apply knock back
+        const knock_back_strength = 200.0; // TODO: move this to enemies depending on size or to a file with constants
+        self.applyKnockack(from_position, knock_back_strength);
+        // TODO: add screen shake, damage and sound
     }
 
     pub fn isDead(self: *const Player) bool {
         return self.current_health == 0;
+    }
+    pub fn applyKnockack(self: *Player, from_position: rl.Vector2, knock_back_strength: f32) void {
+        // calculate the direction from enemy to player
+        const dx = self.position.x - from_position.x;
+        const dy = self.position.y - from_position.y;
+        const distance = std.math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0) {
+            // normalize direction and apply strength
+            self.knock_back_velocity.x = (dx / distance) * knock_back_strength;
+            self.knock_back_velocity.y = (dy / distance) * knock_back_strength;
+        }
     }
 
 };
