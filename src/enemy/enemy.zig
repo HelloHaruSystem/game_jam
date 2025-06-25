@@ -16,9 +16,9 @@ pub const EnemyType = enum {
     pub fn getStats(self: EnemyType) EnemyStats {
         return switch (self) {
             .small_fast => EnemyStats{
-                .max_health = 1,
+                .max_health = 2,
                 .speed = 220,
-                .scale = 1.8, // default is 0.8
+                .scale = 0.8, // default is 0.8
                 .sprite_row = 3,
             },
             .medium_normal => EnemyStats{

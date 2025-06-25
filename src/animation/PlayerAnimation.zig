@@ -1,3 +1,4 @@
+const std = @import("std");
 const rl = @cImport({
     @cInclude("raylib.h");
 });
@@ -73,6 +74,9 @@ pub const PlayerAnimation = struct {
             if (self.frame_timer >= self.frame_duration) {
                 self.current_frame = (self.current_frame + 1) % WALK_FRAME_COUNT;
                 self.frame_timer = 0.0;
+
+                // DEBUG: Print to see the frame sequence
+                std.debug.print("Walking frame: {}\n", .{self.current_frame});
             }
         } else if (!player.is_moving and self.current_state != .attacking) {
             if (self.current_state != .idle) {
@@ -87,6 +91,7 @@ pub const PlayerAnimation = struct {
                 self.frame_timer = 0.0;
             }
         }
+        
     }
 
     pub fn draw(self: *PlayerAnimation, player: *const Player, texture: rl.Texture2D) void {
