@@ -29,7 +29,7 @@ pub const PlayingState = struct {
         enemy_manager: *EnemyManager,
         input: Input,
         delta_time: f32,
-        ) ?GameSate {
+        ) ?GameState {
             // update game entities
             player.update(input, delta_time);
             projectile_manager.update(delta_time);
@@ -45,8 +45,8 @@ pub const PlayingState = struct {
             }
 
             // handle shooting
-            of (self.shouldPlayerShoot(Input, player)) {
-                self.handlePlayerShooting(Player, projectile_manager);
+            if (self.shouldPlayerShoot(Input, player)) {
+                self.handlePlayerShooting(player, projectile_manager);
             }
 
             // handle pause
@@ -60,7 +60,7 @@ pub const PlayingState = struct {
             return null; // stay in playing state
     }
 
-    pub fn reset(self: *PlayingState) {
+    pub fn reset(self: *PlayingState) void {
         self.wave_number = 1;
         self.score = 0;
     }
@@ -71,8 +71,6 @@ pub const PlayingState = struct {
     }
 
     fn handlePlayerShooting(self: *PlayingState, player: *Player, projectile_manager: *ProjectileManager,) void {
-        _ = self; // not used
-        
         // start attack animation
         player.animation.startAttack();
         player.shoot();
@@ -85,9 +83,8 @@ pub const PlayingState = struct {
             // spawn the projectile
             projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
                 std.debug.print("Failed to spawn projectile\n", .{err});
-            }
+            };
         }
-        
     }
 
     fn getPlayerCenter(self: *PlayingState, player: *Player) rl.Vector2 {
