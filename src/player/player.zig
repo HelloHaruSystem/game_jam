@@ -50,13 +50,16 @@ pub const Player = struct {
         
         if (self.is_moving) {
             // calculate new position before moving to check bounds
-            const new_x = self.position.x + movement.x * self.speed * delta_time;
-            const new_y = self.position.y + movement.y * self.speed * delta_time;
+            const new_position = rl.Vector2{
+                .x = self.position.x + movement.x * self.speed * delta_time,
+                .y = self.position.y + movement.y * self.speed * delta_time,
+            };
+            // TODO: move sprite_size to a file with constants
             const sprite_size = 32.0;
 
             // screen boundary check with clamp to make sure the player stays inside the bounds of the window
-            self.position.x = std.math.clamp(new_x, 0.0, @as(f32, @floatFromInt(wind_consts.WINDOW_WIDTH)) - sprite_size);
-            self.position.y = std.math.clamp(new_y, 0.0,  @as(f32, @floatFromInt(wind_consts.WINDOW_HEIGHT)) - sprite_size);
+            // then applies the new positions
+            self.position = clampToScreen(new_position, sprite_size);
         }
 
         // reset frame when switching between idle and walking for smooths transitions (nice)
@@ -83,5 +86,15 @@ pub const Player = struct {
 
     pub fn shoot(self: *Player) void {
         self.fire_timer = 1.0 / self.fire_rate;
+    }
+
+    fn clampToScreen(position: rl.Vector2, sprite_size: f32) rl.Vector2 {
+        const screen_width = @as(f32, @floatFromInt(wind_consts.WINDOW_WIDTH));
+        const screen_height = @as(f32, @floatFromInt(wind_consts.WINDOW_HEIGHT));
+
+        return rl.Vector2{
+            .x = std.math.clamp(position.x, 0.0, screen_width - sprite_size),
+            .y = std.math.clamp(position.y, 0.0, screen_height - sprite_size),
+        };
     }
 };
