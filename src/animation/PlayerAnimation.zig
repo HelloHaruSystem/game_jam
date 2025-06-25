@@ -76,7 +76,7 @@ pub const PlayerAnimation = struct {
                 self.frame_timer = 0.0;
 
                 // DEBUG: Print to see the frame sequence
-                std.debug.print("Walking frame: {}\n", .{self.current_frame});
+                // std.debug.print("Walking frame: {}\n", .{self.current_frame});
             }
         } else if (!player.is_moving and self.current_state != .attacking) {
             if (self.current_state != .idle) {

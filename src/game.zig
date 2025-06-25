@@ -80,7 +80,6 @@ pub const Game = struct {
             },
             .playing => {
                 // rl.HideCursor();
-                mouseWindowLock();
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
                 self.projectile_manager.update(delta_time);
@@ -171,7 +170,7 @@ pub const Game = struct {
 
                 // draw temporary game over text
                 // TODO: make game over UI
-                const text = "GANE OVER";
+                const text = "GAME OVER";
                 const font_size = 60;
                 const text_width = rl.MeasureText(text, font_size);
                 const screen_center_x = win_const.WINDOW_WIDTH / 2;
@@ -198,20 +197,6 @@ pub const Game = struct {
                     rl.WHITE,
                 );
             },
-        }
-    }
-
-    // TODO: fix this or remove
-    // this doesn't work
-    fn mouseWindowLock() void {
-        // keep mouse locked to window bounds
-        const mouse_position = rl.GetMousePosition();
-        if (mouse_position.x < 0 or mouse_position.x > win_const.WINDOW_WIDTH or
-            mouse_position.y < 0 or mouse_position.y > win_const.WINDOW_HEIGHT)
-        {
-            const clamped_x = std.math.clamp(mouse_position.x, 0, @as(f32, @floatFromInt(win_const.WINDOW_WIDTH)));
-            const clamped_y = std.math.clamp(mouse_position.y, 0, @as(f32, @floatFromInt(win_const.WINDOW_HEIGHT)));
-            rl.SetMousePosition(@as(c_int, @intFromFloat(clamped_x)), @as(c_int, @intFromFloat(clamped_y)));
         }
     }
 };
