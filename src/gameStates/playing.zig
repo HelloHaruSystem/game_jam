@@ -30,7 +30,34 @@ pub const PlayingState = struct {
         input: Input,
         delta_time: f32,
         ) ?GameSate {
+            // update game entities
+            player.update(input, delta_time);
+            projectile_manager.update(delta_time);
+            enemy_manager.update(player.position, delta_time);
 
+            // handle collision
+            projectile_manager.checkCollisionWithEnemies(&enemy_manager);
+            enemy_manager.checkCollisionWithPlayer(&player);
+
+            // check for game over
+            if (player.isDead()) {
+                return GameState.game_over;
+            }
+
+            // handle shooting
+            of (self.shouldPlayerShoot(Input, player)) {
+                self.handlePlayerShooting(Player, projectile_manager);
+            }
+
+            // handle pause
+            if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
+                return GameState.pause_menu;
+            }
+
+            // TODO: add wave progression logic
+            // TODO: add score tracking
+
+            return null; // stay in playing state
     }
 
     pub fn reset(self: *PlayingState) {
