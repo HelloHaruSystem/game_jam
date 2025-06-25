@@ -12,6 +12,11 @@ const GameState = @import("utils/gameState.zig").GameState;
 const textureLoader = @import("utils/textureLoader.zig");
 const win_const = @import("utils/constants/screenAndWindow.zig");
 
+// game state handlers
+const PlayingState = @import("gameStates/playing.zig").PlayingState;
+
+
+
 pub const Game = struct {
     player: Player,
     player_texture: rl.Texture2D,
@@ -79,7 +84,6 @@ pub const Game = struct {
                 rl.ShowCursor();
             },
             .playing => {
-                // rl.HideCursor();
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
                 self.projectile_manager.update(delta_time);
@@ -198,5 +202,25 @@ pub const Game = struct {
                 );
             },
         }
+    }
+};
+
+pub const GameTextures = struct {
+    player: rl.Texture2D,
+    projectile: rl.Texture2D,
+    enemy: rl.Texture2D,
+
+    pub fn init(allocator: std.mem.Allocator) !GameTextures {
+        return GameTextures{
+            .player = try textureLoader.loadSprite(allocator, "player_spritesheet.png"),
+            .projectile = try textureLoader.loadSprite(allocator, "projectile_spritesheet.png"),
+            .enemy = try textureLoader.loadSprite(allocator, "enemy_spritesheet.png"),
+        };
+    }
+
+    pub fn deinit(self: *GameTextures) void {
+        textureLoader.unloadTexture(self.player);
+        textureLoader.unloadTexture(self.projectile);
+        textureLoader.unloadTexture(self.enemy);
     }
 };
