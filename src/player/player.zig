@@ -89,7 +89,7 @@ pub const Player = struct {
 
         // update damage timer
         if (self.damager_timer > 0) {
-            self.damager_timer -= 0;
+            self.damager_timer -= delta_time;
             if (self.damager_timer <= 0) {
                 self.is_invincible = false;
             }
@@ -128,8 +128,6 @@ pub const Player = struct {
     }
 
     pub fn getBounds(self: *const Player) rl.Rectangle {
-        if (self.is_invincible) return;
-
         //TODO: move this to a file holding consts
         const player_sprite_size = 32.0;
         return rl.Rectangle{

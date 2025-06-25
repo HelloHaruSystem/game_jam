@@ -18,7 +18,7 @@ pub const EnemyType = enum {
             .small_fast => EnemyStats{
                 .max_health = 2,
                 .speed = 220,
-                .scale = 0.8, // default is 0.8
+                .scale = 1.3, // default is 0.8
                 .sprite_row = 3,
             },
             .medium_normal => EnemyStats{
