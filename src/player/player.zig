@@ -18,6 +18,13 @@ pub const Player = struct {
     fire_timer: f32,
     fire_rate: f32,
 
+    // health values
+    max_health: u32,
+    current_health: u32,
+    damager_timer: f32,     // invincibility frames after taking a hit
+    damage_cooldown: f32,   // how long the invincibility will last 
+    is_invincible: bool,    // for the visual indicator
+
     pub fn init() Player {
         return Player{
             .animation = PlayerAnimation.init(),
@@ -29,6 +36,13 @@ pub const Player = struct {
             .is_attacking = false,
             .fire_timer = 0.0,
             .fire_rate = 1.5, // 1.5 shots a second
+
+            // health stuff
+            .max_health = 3,            // 3 health
+            .current_health = 3,
+            .damager_timer = 0.0,
+            .damage_cooldown = 1.0,     // 1 second
+            .is_invincible = false,
         };
     }
 
@@ -73,10 +87,25 @@ pub const Player = struct {
             self.fire_timer -= delta_time;
         } 
 
+        // update damage timer
+        if (self.damager_timer > 0) {
+            self.damager_timer -= 0;
+            if (self.damager_timer <= 0) {
+                self.is_invincible = false;
+            }
+        }
+
         self.animation.update(self, delta_time);
     }
 
     pub fn draw(self: *Player, texture: rl.Texture2D) void {
+        // Flash Player sprite if invincible
+        if (self.is_invincible) {
+            const flash_speed = 10.0; // 10 flashed per second
+            const show_player = (@mod(@as(u32, @intFromFloat(self.damager_timer * flash_speed)), 2) == 0);
+            if (!show_player) return; // skip this frame
+        }
+
         self.animation.draw(self, texture);
     }
 
@@ -97,4 +126,41 @@ pub const Player = struct {
             .y = std.math.clamp(position.y, 0.0, screen_height - sprite_size),
         };
     }
+
+    pub fn getBounds(self: *const Player) rl.Rectangle {
+        if (self.is_invincible) return;
+
+        //TODO: move this to a file holding consts
+        const player_sprite_size = 32.0;
+        return rl.Rectangle{
+            .x = self.position.x,
+            .y = self.position.y,
+            .width = player_sprite_size,
+            .height = player_sprite_size,
+        };
+    }
+
+    pub fn takeDamage(self: *Player, damage: u32) void {
+        if (self.is_invincible) return;
+
+        // debug
+        std.debug.print("Player taking {} damage! Health: {} -> \n", .{ damage, self.current_health });
+
+        if (self.current_health > damage) {
+            self.current_health -= damage;
+        } else {
+            self.current_health = 0;
+        }
+
+        // start invincibility
+        self.damager_timer = self.damage_cooldown;
+        self.is_invincible = true;
+
+        // TODO: add screen shake, danage sound, and a knockback!
+    }
+
+    pub fn isDead(self: *const Player) bool {
+        return self.current_health == 0;
+    }
+
 };
