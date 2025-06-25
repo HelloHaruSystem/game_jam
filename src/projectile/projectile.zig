@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const ProjectileAnimation = @import("../animation/projectileAnimation.zig").ProjectileAnimation;
+const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
 const win_consts = @import("../utils/constants/screenAndWindow.zig");
 
 pub const Projectile = struct {
@@ -13,6 +14,7 @@ pub const Projectile = struct {
     life_time: f32,
     time_to_live: f32,
     animation: ProjectileAnimation,
+    damage: u32,
 
     pub fn init(start_position: rl.Vector2, direction: rl.Vector2, speed: f32) Projectile {
         return Projectile{
@@ -25,7 +27,23 @@ pub const Projectile = struct {
             .life_time = 0.0,
             .time_to_live = 3.0, // projectile dies after 3 seconds
             .animation = ProjectileAnimation.init(),
+            .damage = 1, // default dmg value //TODO: change this to come from player as the player powers up
         };
+    }
+
+    pub fn getBounds(self: *const Projectile) rl.Rectangle {
+        const projectile_size = 16.0 * 2.0;    // 16x16 sprite * 2 scale from animation //TODO: add scale and sprite size as constants in it's own file!
+        return rl.Rectangle{
+            .x = self.position.x - (projectile_size / 2),
+            .y = self.position.y - (projectile_size / 2),
+            .width = projectile_size,
+            .height = projectile_size,
+        };
+    }
+
+    // TODO: add power up that makes it pierce enemies
+    pub fn onHit(self: *Projectile) void {
+        self.active = false;
     }
 
     pub fn update(self: *Projectile, delta_time: f32) void {
@@ -89,6 +107,34 @@ pub const ProjectileManager = struct {
 
         const projectile = Projectile.init(start_position, direction, speed);
         try self.Projectiles.append(projectile);
+    }
+
+    pub fn checkCollisionWithEnemies(self: *ProjectileManager, enemy_manager: *EnemyManager) void {
+        for (self.Projectiles.items) |*projectile| {
+            if (!projectile.active) continue;
+
+            // check against all enemies
+            for (enemy_manager.enemies.items) |*enemy| {
+                if (!enemy.active) continue;
+
+                // get the collision rectangles
+                const projectile_bounds = projectile.getBounds();
+                const enemy_bounds = enemy.getBounds();
+
+                // check to see if the rectangles overlap
+                if (rl.CheckCollisionRecs(projectile_bounds, enemy_bounds)) {
+                    // collision!
+                    enemy.takeDamage(projectile.damage);
+                    projectile.onHit();
+
+                    //TODO: play hit sound and do explosion animation
+
+                    // since the projectile is destroyed we just break
+                    //TODO: if the project pierce power-up is implemented don't break just yet
+                    break;
+                }
+            }
+        }
     }
 
     pub fn update(self: *ProjectileManager, delta_time: f32) void {

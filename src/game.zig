@@ -84,6 +84,16 @@ pub const Game = struct {
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
                 self.projectile_manager.update(delta_time);
+                self.enemy_manager.update(self.player.position, delta_time);
+
+                // collision
+                self.projectile_manager.checkCollisionWithEnemies(&self.enemy_manager);
+                self.enemy_manager.checkCollisionWithPlayer(&self.player);
+
+                // check for game over
+                if (self.player.isDead()) {
+                    self.current_state = .game_over;
+                }
 
                 // handle shooting
                 //  TODO: move this to it's own function
@@ -108,7 +118,6 @@ pub const Game = struct {
                     }; 
                 }
 
-                self.enemy_manager.update(self.player.position, delta_time);
             },
             .round_break => {
                 rl.ShowCursor();
@@ -118,6 +127,15 @@ pub const Game = struct {
             },
             .game_over => {
                 rl.ShowCursor();
+                // TODO: move this logic ouT!
+                if (rl.IsKeyPressed(rl.KEY_R)) {
+                    // reset the game state
+                    // TODO: go to .start_menu
+                    self.player = Player.init();
+                    self.enemy_manager.clear();
+                    self.projectile_manager.clear();
+                    self.current_state = .playing;
+                }
             },
         }
     }
@@ -149,7 +167,36 @@ pub const Game = struct {
                 rl.ClearBackground(rl.SKYBLUE);
             },
             .game_over => {
-                rl.ClearBackground(rl.SKYBLUE);
+                rl.ClearBackground(rl.RED);
+
+                // draw temporary game over text
+                // TODO: make game over UI
+                const text = "GANE OVER";
+                const font_size = 60;
+                const text_width = rl.MeasureText(text, font_size);
+                const screen_center_x = win_const.WINDOW_WIDTH / 2;
+                const screen_center_y = win_const.WINDOW_HEIGHT / 2;
+
+                rl.DrawText(
+                    text,
+                    screen_center_x - @divTrunc(text_width, 2),
+                    screen_center_y - font_size / 2,
+                    font_size,
+                    rl.WHITE,
+                );
+
+                // Instructions to restart
+                const restart_text = "Perss R to restart";
+                const restart_font_size = 30;
+                const restart_width = rl.MeasureText(restart_text, restart_font_size);
+
+                rl.DrawText(
+                    restart_text,
+                    screen_center_x - @divTrunc(restart_width, 2),
+                    screen_center_y + 50,
+                    restart_font_size,
+                    rl.WHITE,
+                );
             },
         }
     }
