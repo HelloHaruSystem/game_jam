@@ -99,11 +99,11 @@ pub const Player = struct {
         self.knock_back_velocity.y *= (1.0 - self.knock_back_friction * delta_time);
 
         // stop very small knock backs
-        if (@fabs(self.knock_back_velocity.x) < 1.0) {
-            self.knock_back_velocity = 0.0;
+        if (@abs(self.knock_back_velocity.x) < 1.0) {
+            self.knock_back_velocity.x = 0.0;
         }
-        if (@fabs(self.knock_back_velocity.y) < 1.0) {
-            self.knock_back_velocity = 0.0;
+        if (@abs(self.knock_back_velocity.y) < 1.0) {
+            self.knock_back_velocity.y = 0.0;
         }
 
         // reset frame when switching between idle and walking for smooths transitions (nice)
@@ -185,15 +185,15 @@ pub const Player = struct {
         self.is_invincible = true;
 
         // apply knock back
-        const knock_back_strength = 200.0; // TODO: move this to enemies depending on size or to a file with constants
-        self.applyKnockack(from_position, knock_back_strength);
+        const knock_back_strength = 2000.0; // TODO: move this to enemies depending on size or to a file with constants
+        self.applyKnockback(from_position, knock_back_strength);
         // TODO: add screen shake, damage and sound
     }
 
     pub fn isDead(self: *const Player) bool {
         return self.current_health == 0;
     }
-    pub fn applyKnockack(self: *Player, from_position: rl.Vector2, knock_back_strength: f32) void {
+    pub fn applyKnockback(self: *Player, from_position: rl.Vector2, knock_back_strength: f32) void {
         // calculate the direction from enemy to player
         const dx = self.position.x - from_position.x;
         const dy = self.position.y - from_position.y;
