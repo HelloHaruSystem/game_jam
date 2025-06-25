@@ -5,6 +5,7 @@ const rl = @cImport({
 
 const PlayerAnimation = @import("../animation/PlayerAnimation.zig").PlayerAnimation;
 const Input = @import("input.zig").Input;
+const wind_consts = @import("../utils/constants/screenAndWindow.zig");
 
 pub const Player = struct {
     animation: PlayerAnimation,
@@ -48,12 +49,14 @@ pub const Player = struct {
         }
         
         if (self.is_moving) {
+            // calculate new position before moving to check bounds
             const new_x = self.position.x + movement.x * self.speed * delta_time;
             const new_y = self.position.y + movement.y * self.speed * delta_time;
+            const sprite_size = 32.0;
 
-            // screen boundary check goes here
-            self.position.x = new_x;
-            self.position.y = new_y;
+            // screen boundary check with clamp to make sure the player stays inside the bounds of the window
+            self.position.x = std.math.clamp(new_x, 0.0, @as(f32, @floatFromInt(wind_consts.WINDOW_WIDTH)) - sprite_size);
+            self.position.y = std.math.clamp(new_y, 0.0,  @as(f32, @floatFromInt(wind_consts.WINDOW_HEIGHT)) - sprite_size);
         }
 
         // reset frame when switching between idle and walking for smooths transitions (nice)
