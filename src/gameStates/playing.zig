@@ -36,17 +36,29 @@ pub const PlayingState = struct {
             enemy_manager.update(player.position, delta_time);
 
             // handle collision
-            projectile_manager.checkCollisionWithEnemies(&enemy_manager);
-            enemy_manager.checkCollisionWithPlayer(&player);
+            projectile_manager.checkCollisionWithEnemies(enemy_manager);
+            enemy_manager.checkCollisionWithPlayer(player);
 
             // check for game over
             if (player.isDead()) {
                 return GameState.game_over;
             }
 
-            // handle shooting
-            if (self.shouldPlayerShoot(Input, player)) {
-                self.handlePlayerShooting(player, projectile_manager);
+            // handle shooting - start attack animation
+            if (self.shouldPlayerShoot(input, player)) {
+                player.animation.startAttack();
+                player.shoot();
+            }
+
+            // check if projectile should spawn during animation (separate from input)
+            if (player.animation.shouldSpawnProjectile()) {
+                const mouse_position = rl.GetMousePosition();
+                const player_center = self.getPlayerCenter(player);
+
+                // spawn the projectile
+                projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
+                    std.debug.print("Failed to spawn projectile: {}\n", .{err});
+                };
             }
 
             // handle pause
@@ -68,23 +80,6 @@ pub const PlayingState = struct {
     fn shouldPlayerShoot(self: *PlayingState, input: Input, player: *Player) bool {
         _ = self; // not used
         return input.shoot and player.canShoot() and !player.animation.isAttacking();
-    }
-
-    fn handlePlayerShooting(self: *PlayingState, player: *Player, projectile_manager: *ProjectileManager,) void {
-        // start attack animation
-        player.animation.startAttack();
-        player.shoot();
-
-        // check if projectile should spawn during animation
-        if (player.animation.shouldSpawnProjectile()) {
-            const mouse_position = rl.GetMousePosition();
-            const player_center = self.getPlayerCenter(player);
-
-            // spawn the projectile
-            projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
-                std.debug.print("Failed to spawn projectile\n", .{err});
-            };
-        }
     }
 
     fn getPlayerCenter(self: *PlayingState, player: *Player) rl.Vector2 {

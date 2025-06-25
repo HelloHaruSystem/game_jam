@@ -14,52 +14,44 @@ const win_const = @import("utils/constants/screenAndWindow.zig");
 
 // game state handlers
 const PlayingState = @import("gameStates/playing.zig").PlayingState;
-
-
+const GameOverState = @import("gameStates/gameOver.zig").GameOverState;
 
 pub const Game = struct {
     player: Player,
-    player_texture: rl.Texture2D,
-    projectile_texture: rl.Texture2D,
-    enemy_texture: rl.Texture2D,
+    textures: GameTextures,
     aim_circle: AimCircle,
     projectile_manager: ProjectileManager,
     enemy_manager:EnemyManager,
     current_state: GameState,
+    playing_state: PlayingState,
+    game_over_state: GameOverState,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
         rl.InitWindow(win_const.WINDOW_WIDTH, win_const.WINDOW_HEIGHT, "Haru Jam");
         rl.SetTargetFPS(60);
 
-        // init player character
+        const textures = try GameTextures.init(allocator);
         const player = Player.init();
-        // init player texture
-        const player_texture = try textureLoader.loadSprite(allocator, "player_spritesheet.png");
-        // init projectile texture
-        const projectile_texture = try textureLoader.loadSprite(allocator, "projectile_spritesheet.png");
-        // init enemy texture
-        const enemy_texture = try textureLoader.loadSprite(allocator, "enemy_spritesheet.png");
-        // init aim arrow
         const aim_circle = AimCircle.init();
+        const projectile_manager = ProjectileManager.init(allocator);
+        const enemy_manager = EnemyManager.init(allocator);
 
         return Game{
             .player = player,
-            .player_texture = player_texture,
-            .projectile_texture = projectile_texture,
-            .enemy_texture = enemy_texture,
+            .textures = textures,
             .aim_circle = aim_circle,
-            .projectile_manager = ProjectileManager.init(allocator),
-            .enemy_manager = EnemyManager.init(allocator),
+            .projectile_manager = projectile_manager,
+            .enemy_manager = enemy_manager,
             .current_state = GameState.playing, // TODO: when menu is added start at the start menu
+            .playing_state = PlayingState.init(),
+            .game_over_state = GameOverState.init(),
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Game) void {
-        textureLoader.unloadTexture(self.player_texture);
-        textureLoader.unloadTexture(self.projectile_texture);
-        textureLoader.unloadTexture(self.enemy_texture);
+        self.textures.deinit();
         self.projectile_manager.deinit();
         self.enemy_manager.deinit();
         rl.CloseWindow();
@@ -74,6 +66,7 @@ pub const Game = struct {
 
     pub fn update(self: *Game) void {
         const input = Input.update();
+        const delta_time = rl.GetFrameTime();
 
         // TODO: do functions for each case
         switch (self.current_state) {
@@ -84,43 +77,16 @@ pub const Game = struct {
                 rl.ShowCursor();
             },
             .playing => {
-                const delta_time = rl.GetFrameTime();
-                self.player.update(input, delta_time);
-                self.projectile_manager.update(delta_time);
-                self.enemy_manager.update(self.player.position, delta_time);
-
-                // collision
-                self.projectile_manager.checkCollisionWithEnemies(&self.enemy_manager);
-                self.enemy_manager.checkCollisionWithPlayer(&self.player);
-
-                // check for game over
-                if (self.player.isDead()) {
-                    self.current_state = .game_over;
+                const next_state = self.playing_state.update(
+                    &self.player,
+                    &self.projectile_manager,
+                    &self.enemy_manager,
+                    input,
+                    delta_time,
+                );
+                if (next_state) |state| {
+                    self.transitionToState(state);
                 }
-
-                // handle shooting
-                //  TODO: move this to it's own function
-                if (input.shoot and self.player.canShoot() and !self.player.animation.isAttacking()) {
-                    // start attack animation
-                    self.player.animation.startAttack();
-                    self.player.shoot();
-                }
-
-                // check if projectile should spawn during animation
-                if (self.player.animation.shouldSpawnProjectile()) {
-                    const mouse_position = rl.GetMousePosition();
-                    const player_center = rl.Vector2{
-                        .x = self.player.position.x + 16,
-                        .y = self.player.position.y + 16,
-                    };
-
-                    // spawn the projectile
-                    // TODO: get the speed from player
-                    self.projectile_manager.spawn(player_center, mouse_position, self.player.fire_speed) catch |err| {
-                        std.debug.print("Failed to spawn projectile: {}\n", .{err});
-                    }; 
-                }
-
             },
             .round_break => {
                 rl.ShowCursor();
@@ -130,14 +96,9 @@ pub const Game = struct {
             },
             .game_over => {
                 rl.ShowCursor();
-                // TODO: move this logic ouT!
-                if (rl.IsKeyPressed(rl.KEY_R)) {
-                    // reset the game state
-                    // TODO: go to .start_menu
-                    self.player = Player.init();
-                    self.enemy_manager.clear();
-                    self.projectile_manager.clear();
-                    self.current_state = .playing;
+                const next_state = self.game_over_state.update(input);
+                if (next_state) |state| {
+                    self.transitionToState(state);
                 }
             },
         }
@@ -156,12 +117,7 @@ pub const Game = struct {
                 rl.ClearBackground(rl.SKYBLUE);
             },
             .playing => {
-                rl.ClearBackground(rl.SKYBLUE);
-                // draw the player character and circle
-                self.player.draw(self.player_texture);
-                self.aim_circle.draw(self.player.position);
-                self.projectile_manager.draw(self.projectile_texture);
-                self.enemy_manager.draw(self.enemy_texture);
+                self.drawGameplay();
             },
             .round_break => {
                 rl.ClearBackground(rl.SKYBLUE);
@@ -170,38 +126,36 @@ pub const Game = struct {
                 rl.ClearBackground(rl.SKYBLUE);
             },
             .game_over => {
-                rl.ClearBackground(rl.RED);
-
-                // draw temporary game over text
-                // TODO: make game over UI
-                const text = "GAME OVER";
-                const font_size = 60;
-                const text_width = rl.MeasureText(text, font_size);
-                const screen_center_x = win_const.WINDOW_WIDTH / 2;
-                const screen_center_y = win_const.WINDOW_HEIGHT / 2;
-
-                rl.DrawText(
-                    text,
-                    screen_center_x - @divTrunc(text_width, 2),
-                    screen_center_y - font_size / 2,
-                    font_size,
-                    rl.WHITE,
-                );
-
-                // Instructions to restart
-                const restart_text = "Press R to restart";
-                const restart_font_size = 30;
-                const restart_width = rl.MeasureText(restart_text, restart_font_size);
-
-                rl.DrawText(
-                    restart_text,
-                    screen_center_x - @divTrunc(restart_width, 2),
-                    screen_center_y + 50,
-                    restart_font_size,
-                    rl.WHITE,
-                );
+                self.game_over_state.draw();
             },
         }
+    }
+
+    fn drawGameplay(self: *Game) void {
+        rl.ClearBackground(rl.SKYBLUE);
+        self.player.draw(self.textures.player);
+        self.aim_circle.draw(self.player.position);
+        self.projectile_manager.draw(self.textures.projectile);
+        self.enemy_manager.draw(self.textures.enemy);
+    }
+
+    fn transitionToState(self: *Game, new_state: GameState) void {
+        switch (new_state) {
+            .playing => {
+                if (self.current_state == .game_over) {
+                    self.resetGame();
+                }
+            },
+            else => {},
+        }
+        self.current_state = new_state;
+    }
+
+    fn resetGame(self: *Game) void {
+        self.player = Player.init();
+        self.enemy_manager.clear();
+        self.projectile_manager.clear();
+        self.playing_state.reset();
     }
 };
 
