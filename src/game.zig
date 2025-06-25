@@ -5,7 +5,7 @@ const rl = @cImport({
 
 const Input = @import("player/input.zig").Input;
 const Player = @import("player/player.zig").Player;
-const AimCircle = @import("player/aimCircle.zig").AimCricle;
+const AimCircle = @import("player/aimCircle.zig").AimCircle;
 const ProjectileManager = @import("projectile/projectile.zig").ProjectileManager;
 const EnemyManager = @import("enemy/enemyManager.zig").EnemyManager;
 const GameState = @import("utils/gameState.zig").GameState;
@@ -185,7 +185,7 @@ pub const Game = struct {
                 );
 
                 // Instructions to restart
-                const restart_text = "Perss R to restart";
+                const restart_text = "Press R to restart";
                 const restart_font_size = 30;
                 const restart_width = rl.MeasureText(restart_text, restart_font_size);
 

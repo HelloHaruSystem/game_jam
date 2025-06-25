@@ -3,17 +3,17 @@ const rl = @cImport({
     @cInclude("raylib.h");
 });
 
-pub const AimCricle = struct {
+pub const AimCircle = struct {
     distance_from_player: f32,
 
-    pub fn init() AimCricle {
-        return AimCricle{
+    pub fn init() AimCircle {
+        return AimCircle{
             .distance_from_player = 50.0, // radius of invisible circle around the player character
         };
     }
 
     // TODO: add some of these as constants
-    pub fn draw(self: *AimCricle, player_position: rl.Vector2) void {
+    pub fn draw(self: *AimCircle, player_position: rl.Vector2) void {
         const mouse_position = rl.GetMousePosition();
 
         // calculate direction from player to mouse
