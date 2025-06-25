@@ -79,7 +79,7 @@ pub const Game = struct {
                 rl.ShowCursor();
             },
             .playing => {
-                rl.HideCursor();
+                // rl.HideCursor();
                 mouseWindowLock();
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
@@ -103,9 +103,7 @@ pub const Game = struct {
 
                     // spawn the projectile
                     // TODO: get the speed from player
-                    // TODO: add fire rate limit
-                    // TODO: error handle this properly
-                    self.projectile_manager.spawn(player_center, mouse_position, 400.0) catch |err| {
+                    self.projectile_manager.spawn(player_center, mouse_position, self.player.fire_speed) catch |err| {
                         std.debug.print("Failed to spawn projectile: {}\n", .{err});
                     }; 
                 }
