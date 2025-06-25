@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const enemy = @import("enemy.zig");
+const Player = @import("../player/player.zig").Player;
 const win_consts = @import("../utils/constants/screenAndWindow.zig");
 
 pub const EnemyManager = struct {
@@ -56,6 +57,24 @@ pub const EnemyManager = struct {
         };
 
         try self.spawn(position, enemy_type);
+    }
+
+    pub fn checkCollisionWithPlayer(self: *EnemyManager, player: *Player) void {
+        if (player.isDead()) return;
+
+        for (self.enemies.items) |*e| {
+            if (!e.active) continue;
+
+            const enemy_bounds = e.getBounds();
+            const player_bounds = player.getBounds();
+
+            if (rl.CheckCollisionRecs(enemy_bounds, player_bounds)) {
+                //TODO: make some enemies deal less or more damage
+                player.takeDamage(1);
+
+                break; // only one enemy can hit per frame
+            }
+        }
     }
 
     pub fn update(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
