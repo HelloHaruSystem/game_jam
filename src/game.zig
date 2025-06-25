@@ -84,6 +84,7 @@ pub const Game = struct {
                 const delta_time = rl.GetFrameTime();
                 self.player.update(input, delta_time);
                 self.projectile_manager.update(delta_time);
+                self.projectile_manager.checkCollisionWithEnemies(&self.enemy_manager);
 
                 // handle shooting
                 //  TODO: move this to it's own function
