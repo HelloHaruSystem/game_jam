@@ -8,6 +8,7 @@ const ProjectileManager = @import("../projectile/projectile.zig").ProjectileMana
 const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
 const Input = @import("../player/input.zig").Input;
 const GameState = @import("../utils/gameState.zig").GameState;
+const GameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const PlayingState = struct {
     // playing specific values/states
@@ -16,7 +17,7 @@ pub const PlayingState = struct {
 
     pub fn init() PlayingState{
         return PlayingState{
-            .wave_number = 0,
+            .wave_number = 1,
             .score = 0,
         };
     }
@@ -29,22 +30,45 @@ pub const PlayingState = struct {
         input: Input,
         delta_time: f32,
         ) ?GameSate {
-            
-    }
-
-    pub fn reset(_: *PlayingState) {
 
     }
 
-    fn shouldPlayerShoot() {
-
+    pub fn reset(self: *PlayingState) {
+        self.wave_number = 1;
+        self.score = 0;
     }
 
-    fn handlePlayerShooting() {
-
+    fn shouldPlayerShoot(self: *PlayingState, input: Input, player: *Player) bool {
+        _ = self; // not used
+        return input.shoot and player.canShoot() and !player.animation.isAttacking();
     }
 
-    fn getPlayerCenter() {
+    fn handlePlayerShooting(self: *PlayingState, player: *Player, projectile_manager: *ProjectileManager,) void {
+        _ = self; // not used
+        
+        // start attack animation
+        player.animation.startAttack();
+        player.shoot();
 
+        // check if projectile should spawn during animation
+        if (player.animation.shouldSpawnProjectile()) {
+            const mouse_position = rl.GetMousePosition();
+            const player_center = self.getPlayerCenter(player);
+
+            // spawn the projectile
+            projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
+                std.debug.print("Failed to spawn projectile\n", .{err});
+            }
+        }
+        
+    }
+
+    fn getPlayerCenter(self: *PlayingState, player: *Player) rl.Vector2 {
+        _ = self;
+        const player_sprite_half_size = GameConstants.PLAYER_SPRITE_SIZE / 2;
+        return rl.Vector2{
+            .x = player.position.x + player_sprite_half_size,
+            .y = player.position.y + player_sprite_half_size,
+        };
     }
 };
