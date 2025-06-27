@@ -131,8 +131,7 @@ pub const Player = struct {
     pub fn draw(self: *Player, texture: rl.Texture2D) void {
         // Flash Player sprite if invincible
         if (self.is_invincible) {
-            const gameConstants.PLAYER_FLASH_SPEED = 10.0; // 10 flashed per second
-            const show_player = (@mod(@as(u32, @intFromFloat(self.damager_timer * flash_speed)), 2) == 0);
+            const show_player = (@mod(@as(u32, @intFromFloat(self.damager_timer * gameConstants.PLAYER_FLASH_SPEED)), 2) == 0);
             if (!show_player) return; // skip this frame
         }
 
