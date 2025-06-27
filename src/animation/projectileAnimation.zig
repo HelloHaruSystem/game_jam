@@ -3,15 +3,12 @@ const rl = @cImport({
     @cInclude("raylib.h");
 });
 
+const gameConstants = @import("../utils/constants/gameConstants.zig");
+
 pub const ProjectileAnimation = struct {
     current_frame: u32,
     frame_timer: f32,
     frame_duration: f32,
-
-    // animation constants
-    const PROJECTILE_ROW = 16;
-    const FRAME_COUNT = 5;
-    const SPRITE_SIZE = 16; // 16x16 sprite
 
     pub fn init() ProjectileAnimation {
         return ProjectileAnimation{
@@ -24,20 +21,20 @@ pub const ProjectileAnimation = struct {
     pub fn update(self: *ProjectileAnimation, delta_time: f32) void {
         self.frame_timer += delta_time;
         if (self.frame_timer >= self.frame_duration) {
-            self.current_frame = (self.current_frame + 1) % FRAME_COUNT;
+            self.current_frame = (self.current_frame + 1) % gameConstants.PROJECTILE_FRAME_COUNT;
             self.frame_timer = 0.0;
         }
     }
 
     pub fn draw(self: *const ProjectileAnimation, position: rl.Vector2, velocity: rl.Vector2, texture: rl.Texture2D) void {
-        const scale = 2.0; // scale factor edit this to change the size of the projectile
-        const scaled_size = SPRITE_SIZE * scale;
+        const scale = gameConstants.DEFAULT_PROJECTILE_SCALE; // scale factor edit this to change the size of the projectile
+        const scaled_size = gameConstants.PROJECTILE_SPRITE_SIZE * scale;
 
         const source_rectangle = rl.Rectangle{
-            .x = @floatFromInt(self.current_frame * SPRITE_SIZE),
-            .y = @floatFromInt(PROJECTILE_ROW * SPRITE_SIZE),
-            .width = SPRITE_SIZE,
-            .height = SPRITE_SIZE,
+            .x = @floatFromInt(self.current_frame * gameConstants.PROJECTILE_SPRITE_SIZE),
+            .y = @floatFromInt(gameConstants.PROJECTILE_ROW * gameConstants.PROJECTILE_SPRITE_SIZE),
+            .width = gameConstants.PROJECTILE_SPRITE_SIZE,
+            .height = gameConstants.PROJECTILE_SPRITE_SIZE,
         };
 
         const destination_rectangle = rl.Rectangle{
