@@ -5,7 +5,7 @@ const rl = @cImport({
 
 const PlayerAnimation = @import("../animation/PlayerAnimation.zig").PlayerAnimation;
 const Input = @import("input.zig").Input;
-const wind_consts = @import("../utils/constants/screenAndWindow.zig");
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const Player = struct {
     animation: PlayerAnimation,
@@ -32,25 +32,25 @@ pub const Player = struct {
     pub fn init() Player {
         return Player{
             .animation = PlayerAnimation.init(),
-            .position = rl.Vector2{ .x = 640, .y = 360, }, // center for the 1280x720 screen
-            .speed = 200.0, 
-            .fire_speed = 300.0,
+            .position = rl.Vector2{ .x = gameConstants.WINDOW_WIDTH / 2, .y = gameConstants.WINDOW_HEIGHT / 2, }, // center for the 1280x720 screen
+            .speed = gameConstants.DEFAULT_PLAYER_SPEED, 
+            .fire_speed = gameConstants.DEFAULT_PLAYER_FIRE_SPEED,
             .facing_left = false,
             .is_moving = false,
             .is_attacking = false,
             .fire_timer = 0.0,
-            .fire_rate = 1.5, // 1.5 shots a second
+            .fire_rate = gameConstants.DEFAULT_PLAYER_FIRE_RATE,
 
             // health stuff
-            .max_health = 3,            // 3 health
-            .current_health = 3,
+            .max_health = gameConstants.DEFAULT_PLAYER_MAX_HEALTH,  
+            .current_health = gameConstants.DEFAULT_PLAYER_MAX_HEALTH,
             .damager_timer = 0.0,
-            .damage_cooldown = 1.0,     // 1 second
+            .damage_cooldown = gameConstants.DEFAULT_PLAYER_DAMAGE_COOLDOWN,  
             .is_invincible = false,
 
             // knockback stuff
             .knock_back_velocity = rl.Vector2{ .x = 0.0, .y = 0.0 },
-            .knock_back_friction = 8.0, // the more the faster decay
+            .knock_back_friction = gameConstants.DEFAULT_PLAYER_KNOCKBACK_FRICTION, // the more the faster decay
         };
     }
 
@@ -90,7 +90,7 @@ pub const Player = struct {
                 .x = self.position.x + total_movement.x,
                 .y = self.position.y + total_movement.y,
             };
-            const player_sprite_size = 32.0;   // TODO: move this to a file with constants
+            const player_sprite_size = gameConstants.PLAYER_SPRITE_SIZE;
             self.position = clampToScreen(new_position, player_sprite_size);
         }
 
@@ -131,7 +131,7 @@ pub const Player = struct {
     pub fn draw(self: *Player, texture: rl.Texture2D) void {
         // Flash Player sprite if invincible
         if (self.is_invincible) {
-            const flash_speed = 10.0; // 10 flashed per second
+            const gameConstants.PLAYER_FLASH_SPEED = 10.0; // 10 flashed per second
             const show_player = (@mod(@as(u32, @intFromFloat(self.damager_timer * flash_speed)), 2) == 0);
             if (!show_player) return; // skip this frame
         }
@@ -148,8 +148,8 @@ pub const Player = struct {
     }
 
     fn clampToScreen(position: rl.Vector2, sprite_size: f32) rl.Vector2 {
-        const screen_width = @as(f32, @floatFromInt(wind_consts.WINDOW_WIDTH));
-        const screen_height = @as(f32, @floatFromInt(wind_consts.WINDOW_HEIGHT));
+        const screen_width = @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH));
+        const screen_height = @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT));
 
         return rl.Vector2{
             .x = std.math.clamp(position.x, 0.0, screen_width - sprite_size),
@@ -185,7 +185,7 @@ pub const Player = struct {
         self.is_invincible = true;
 
         // apply knock back
-        const knock_back_strength = 2000.0; // TODO: move this to enemies depending on size or to a file with constants
+        const knock_back_strength = gameConstants.DEFAULT_KNOCKBACK_STRENGTH;
         self.applyKnockback(from_position, knock_back_strength);
         // TODO: add screen shake, damage and sound
     }
