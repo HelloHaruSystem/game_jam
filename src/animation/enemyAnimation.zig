@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const Enemy = @import("../enemy/enemy.zig").Enemy;
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyAnimation = struct {
     current_frame: u32,
@@ -12,8 +13,6 @@ pub const EnemyAnimation = struct {
     hit_timer: f32,
 
     // animation constants
-    const SPRITE_SIZE = 32;
-    const FRAME_COUNT = 6;
     const HIT_FLASH_DURATION = 0.2;
 
     pub fn init() EnemyAnimation {
@@ -29,7 +28,7 @@ pub const EnemyAnimation = struct {
         // update animation frames
         self.frame_timer += delta_time;
         if (self.frame_timer >= self.frame_duration) {
-            self.current_frame = (self.current_frame + 1) % FRAME_COUNT;
+            self.current_frame = (self.current_frame + 1) % gameConstants.ENEMY_FRAME_COUNT;
             self.frame_timer = 0.0;
         }
 
@@ -40,13 +39,13 @@ pub const EnemyAnimation = struct {
     }
 
     pub fn draw(self: *const EnemyAnimation, enemy: *const Enemy, texture: rl.Texture2D) void {
-        const scaled_size = SPRITE_SIZE * enemy.scale;
+        const scaled_size = gameConstants.ENEMY_SPRITE_SIZE * enemy.scale;
 
         const source_rectangle = rl.Rectangle{
-            .x = @floatFromInt(self.current_frame * SPRITE_SIZE),
-            .y = @floatFromInt(enemy.sprite_row * SPRITE_SIZE),
-            .width = if (enemy.facing_left) -SPRITE_SIZE else SPRITE_SIZE,
-            .height = SPRITE_SIZE,
+            .x = @floatFromInt(self.current_frame * gameConstants.ENEMY_SPRITE_SIZE),
+            .y = @floatFromInt(enemy.sprite_row * gameConstants.ENEMY_SPRITE_SIZE),
+            .width = if (enemy.facing_left) -gameConstants.ENEMY_SPRITE_SIZE else gameConstants.ENEMY_SPRITE_SIZE,
+            .height = gameConstants.ENEMY_SPRITE_SIZE,
         };
 
         const destination_rectangle = rl.Rectangle{
@@ -68,7 +67,7 @@ pub const EnemyAnimation = struct {
     }
 
     pub fn startHitFlash(self: *EnemyAnimation) void {
-        self.hit_timer = HIT_FLASH_DURATION;
+        self.hit_timer = gameConstants.HIT_FLASH_DURATION;
     }
 
     pub fn isFlashing(self: *const EnemyAnimation) bool {
@@ -82,7 +81,7 @@ pub const EnemyAnimation = struct {
     }
 
     pub fn getBounds(_: *const EnemyAnimation, enemy: *const Enemy) rl.Rectangle {
-        const scaled_size = SPRITE_SIZE * enemy.scale;
+        const scaled_size = gameConstants.ENEMY_SPRITE_SIZE * enemy.scale;
         return rl.Rectangle{
             .x = enemy.position.x - (scaled_size / 2),
             .y = enemy.position.y - (scaled_size / 2),
