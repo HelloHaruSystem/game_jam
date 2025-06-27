@@ -5,7 +5,7 @@ const rl = @cImport({
 
 const Input = @import("../player/input.zig").Input;
 const GameState = @import("../utils/gameState.zig").GameState;
-const win_consts = @import("../utils/constants/screenAndWindow.zig");
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const GameOverState = struct {
     selected_option: u32,
@@ -59,8 +59,8 @@ pub const GameOverState = struct {
     pub fn draw(self: *GameOverState) void {
         rl.ClearBackground(rl.RED);
 
-        const center_x = win_consts.WINDOW_WIDTH / 2;
-        const center_y = win_consts.WINDOW_HEIGHT / 2;
+        const center_x = gameConstants.WINDOW_WIDTH / 2;
+        const center_y = gameConstants.WINDOW_HEIGHT / 2;
 
         // game over title
         const title = "GAME OVER";
