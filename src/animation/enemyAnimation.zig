@@ -12,9 +12,6 @@ pub const EnemyAnimation = struct {
     frame_duration: f32,
     hit_timer: f32,
 
-    // animation constants
-    const HIT_FLASH_DURATION = 0.2;
-
     pub fn init() EnemyAnimation {
         return EnemyAnimation{
             .current_frame = 0,

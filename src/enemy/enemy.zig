@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const EnemyAnimation = @import("../animation/enemyAnimation.zig").EnemyAnimation;
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyType = enum {
     small_fast,
@@ -12,32 +13,31 @@ pub const EnemyType = enum {
     boss,
 
     // TODO: all are the same sprite for now change in the future
-    // TODO: move some of these values to a file with constants for easy changes
     pub fn getStats(self: EnemyType) EnemyStats {
         return switch (self) {
             .small_fast => EnemyStats{
-                .max_health = 2,
-                .speed = 220,
-                .scale = 1.3, // default is 0.8
-                .sprite_row = 3,
+                .max_health = gameConstants.SMALL_ENEMY_HEALTH,
+                .speed =gameConstants.SMALL_ENEMY_SPEED,
+                .scale = gameConstants.SMALL_ENEMY_SCALE, // default is 0.8
+                .sprite_row = gameConstants.ENEMY_WALK_ROW,
             },
             .medium_normal => EnemyStats{
-                .max_health = 3,
-                .speed = 80.0,
-                .scale = 1.0,
-                .sprite_row = 3,
+                .max_health = gameConstants.MEDIUM_ENEMY_HEALTH,
+                .speed = gameConstants.MEDIUM_ENEMY_SPEED,
+                .scale = gameConstants.MEDIUM_ENEMY_SCALE,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW,
             },
             .large_slow => EnemyStats{
-                .max_health = 5,
-                .speed = 50.0,
-                .scale = 1.5,
-                .sprite_row = 3,
+                .max_health = gameConstants.LARGE_ENEMY_HEALTH,
+                .speed = gameConstants.LARGE_ENEMY_SPEED,
+                .scale = gameConstants.LARGE_ENEMY_SCALE,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW,
             },
             .boss => EnemyStats{
-                .max_health = 20,
-                .speed = 30.0,
-                .scale = 2.0,
-                .sprite_row = 3,
+                .max_health = gameConstants.BOSS_ENEMY_HEALTH,
+                .speed = gameConstants.BOSS_ENEMY_SPEED,
+                .scale = gameConstants.BOSS_ENEMY_SCALE,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW,
             },
         };
     }
