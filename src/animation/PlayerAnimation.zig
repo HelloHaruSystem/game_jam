@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const Player = @import("../player/player.zig").Player;
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const AnimationState = enum {
     idle,
@@ -19,15 +20,6 @@ pub const PlayerAnimation = struct {
     attack_timer: f32,
     attack_duration: f32,
     projectile_spawned: bool, // track if projectile was already spawned for this attack
-
-    // Row-based animation (0-indexed)
-    const IDLE_ROW = 4;
-    const WALK_ROW = 3;
-    const ATTACK_ROW = 8;
-
-    const WALK_FRAME_COUNT = 8;     // 8 frames for walking 0-7
-    const IDLE_FRAME_COUNT = 6;     // 6 frames for idle animation 0-5+
-    const ATTACK_FRAME_COUNT = 8;   // 8 frames for walking 0-7
 
     pub fn init() PlayerAnimation {
         return PlayerAnimation{
@@ -55,7 +47,7 @@ pub const PlayerAnimation = struct {
                 // keep using attack animation
                 self.frame_timer += delta_time;
                 if (self.frame_timer >= self.attack_duration) {
-                    self.current_frame = (self.current_frame + 1) % ATTACK_FRAME_COUNT;
+                    self.current_frame = (self.current_frame + 1) % gameConstants.PLAYER_ATTACK_FRAME_COUNT;
                     self.frame_timer = 0.0;
                 }
                 return; // return to skip walking or idle animation
@@ -72,7 +64,7 @@ pub const PlayerAnimation = struct {
 
             self.frame_timer += delta_time;
             if (self.frame_timer >= self.frame_duration) {
-                self.current_frame = (self.current_frame + 1) % WALK_FRAME_COUNT;
+                self.current_frame = (self.current_frame + 1) % gameConstants.PLAYER_WALK_FRAME_COUNT;
                 self.frame_timer = 0.0;
 
                 // DEBUG: Print to see the frame sequence
@@ -87,7 +79,7 @@ pub const PlayerAnimation = struct {
 
             self.frame_timer += delta_time;
             if (self.frame_timer >= self.frame_duration) {
-                self.current_frame = (self.current_frame + 1) % IDLE_FRAME_COUNT;
+                self.current_frame = (self.current_frame + 1) % gameConstants.PLAYER_IDLE_FRAME_COUNT;
                 self.frame_timer = 0.0;
             }
         }
@@ -96,16 +88,16 @@ pub const PlayerAnimation = struct {
 
     pub fn draw(self: *PlayerAnimation, player: *const Player, texture: rl.Texture2D) void {
         const row: u32 = switch (self.current_state) {
-            .idle => IDLE_ROW,
-            .walking => WALK_ROW,
-            .attacking => ATTACK_ROW,
+            .idle => gameConstants.PLAYER_IDLE_ROW,
+            .walking => gameConstants.PLAYER_WALK_ROW,
+            .attacking => gameConstants.PLAYER_ATTACK_ROW,
         };
 
         const source_rectangle = rl.Rectangle{
-            .x = @floatFromInt(self.current_frame * 32), // TODO: add constants instead of hard coding this (it's 32 because of the sprites being 32x32)
-            .y = @floatFromInt(row * 32),
-            .width = if (player.facing_left) -32 else 32,
-            .height = 32,
+            .x = @floatFromInt(self.current_frame * gameConstants.PLAYER_SPRITE_SIZE),
+            .y = @floatFromInt(row * gameConstants.PLAYER_SPRITE_SIZE),
+            .width = if (player.facing_left) -gameConstants.PLAYER_SPRITE_SIZE else gameConstants.PLAYER_SPRITE_SIZE,
+            .height = gameConstants.PLAYER_SPRITE_SIZE,
         };
 
         rl.DrawTextureRec(texture, source_rectangle, player.position, rl.WHITE);
@@ -120,7 +112,7 @@ pub const PlayerAnimation = struct {
         self.current_state = .attacking;
         self.current_frame = 0;
         self.frame_timer = 0.0;
-        self.attack_timer = ATTACK_FRAME_COUNT * self.attack_duration;
+        self.attack_timer = gameConstants.PLAYER_ATTACK_FRAME_COUNT * self.attack_duration;
         self.projectile_spawned = false; 
     }
 
