@@ -5,7 +5,7 @@ const rl = @cImport({
 
 const enemy = @import("enemy.zig");
 const Player = @import("../player/player.zig").Player;
-const win_consts = @import("../utils/constants/screenAndWindow.zig");
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyManager = struct {
     enemies: std.ArrayList(enemy.Enemy),
@@ -38,20 +38,20 @@ pub const EnemyManager = struct {
         const edge = random.intRangeAtMost(u8, 0, 3);                 // 0 = top, 1 = right, 2 = bottom, 3 = left
         const position = switch (edge) {
             0 => rl.Vector2{ // top
-                .x = random.float(f32) * @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH)),
+                .x = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH)),
                 .y = -50,
             },
             1 => rl.Vector2{ // right
-                .x = @floatFromInt(win_consts.WINDOW_WIDTH + 50),
-                .y = random.float(f32) * @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT)),
+                .x = @floatFromInt(gameConstants.WINDOW_WIDTH + 50),
+                .y = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT)),
             },
             2 => rl.Vector2{ // bottom
-                .x = random.float(f32) * @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH)),
-                .y = @floatFromInt(win_consts.WINDOW_HEIGHT + 50),
+                .x = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH)),
+                .y = @floatFromInt(gameConstants.WINDOW_HEIGHT + 50),
             },
             3 => rl.Vector2{ // left
                 .x = - 50,
-                .y = random.float(f32) * @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT)),
+                .y = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT)),
             },
             else => rl.Vector2{ .x = 0, .y = 0, },
         };
