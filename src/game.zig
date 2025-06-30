@@ -140,6 +140,16 @@ pub const Game = struct {
 
         // draw system UI
         self.playing_state.drawUI();
+
+        // TODO: move this to a dedicated ui file
+        const fps = rl.GetFPS();
+        const fps_text = std.fmt.allocPrint(self.allocator, "FPS: {d}", .{ fps, }) catch "FPS: ?";
+        defer self.allocator.free(fps_text);
+        const fps_text_c = self.allocator.dupeZ(u8, fps_text) catch return;
+        defer self.allocator.free(fps_text_c);
+
+        const text_width = rl.MeasureText(fps_text_c.ptr, 20);
+        rl.DrawText(fps_text_c, gameConst.WINDOW_WIDTH - text_width - 20, 20, 20, rl.WHITE);
     }
 
     fn transitionToState(self: *Game, new_state: GameState) void {
