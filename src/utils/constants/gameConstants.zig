@@ -76,4 +76,6 @@ pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
 
 // Rounds values
 pub const DEFAULT_ROUND_DURATION = 30.0; // each round is 30 seconds
-pub const DEFAULT_BREAK_DURATION = 5.0;
+pub const DEFAULT_BREAK_DURATION = 5.0;  // 5 second break between rounds
+pub const BASE_SPAWN_RATE = 2.0;         // spawns every 2 second
+pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 seconds
