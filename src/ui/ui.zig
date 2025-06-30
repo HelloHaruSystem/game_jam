@@ -180,6 +180,7 @@ pub const UI = struct {
     // game over menu
     // TODO: add some of the hardcoded values to the constant module
     pub fn drawGameOverUI(self: *UI, selected_option: u32) void {
+        _ = self;
         rl.ClearBackground(rl.RED);
 
         const center_x = gameConstants.WINDOW_WIDTH / 2;
@@ -218,7 +219,7 @@ pub const UI = struct {
         // Main menu option
         const menu_color = if (selected_option == 1) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
         const menu_width = rl.MeasureText(menu_text, menu_font_size);
-        
+
         rl.DrawText(
             menu_text,
             center_x - @divTrunc(menu_width, 2),
