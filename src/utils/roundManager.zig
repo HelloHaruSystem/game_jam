@@ -35,7 +35,7 @@ pub const RoundManager = struct {
             .round_state = .active,
             .round_timer = 0.0,
             .round_duration = gameConstants.DEFAULT_ROUND_DURATION,
-            .break_time = 0.0,
+            .break_timer = 0.0,
             .break_duration = gameConstants.DEFAULT_BREAK_DURATION,
             .base_spawn_rate = gameConstants.BASE_SPAWN_RATE,
             .current_spawn_rate = gameConstants.BASE_SPAWN_RATE,
@@ -46,7 +46,7 @@ pub const RoundManager = struct {
     }
 
     pub fn update(self: *RoundManager, delta_time: f32) void {
-        switch (RoundState) {
+        switch (self.round_state) {
             .active => {
                 self.round_timer += delta_time;
                 self.spawn_timer += delta_time;
@@ -123,10 +123,10 @@ pub const RoundManager = struct {
         self.enemies_killed_this_round += 1;
 
         const points = switch (enemy_type) {
-            EnemyType.small_fast => gameConstants.SMALL_ENEMY_SCORE,
-            EnemyType.medium_normal => gameConstants.MEDIUM_ENEMY_SCORE,
-            EnemyType.large_slow => gameConstants.LARGE_ENEMY_SCORE,
-            EnemyType.boss => gameConstants.BOSS_ENEMY_SCORE,
+            .small_fast => gameConstants.SMALL_ENEMY_SCORE,
+            .medium_normal => gameConstants.MEDIUM_ENEMY_SCORE,
+            .large_slow => gameConstants.LARGE_ENEMY_SCORE,
+            .boss => gameConstants.BOSS_ENEMY_SCORE,
         };
         self.score += points;
 
@@ -247,7 +247,7 @@ pub const RoundManager = struct {
             rl.DrawText(timer_text_c, 20, 80, small_font_size, ui_color);
         }
         else if (self.round_state == .break_time) {
-            const break_remaining = self.getEnemyTypeToSpawn();
+            const break_remaining = self.getBreakTimeRemaining();
             const break_text = std.fmt.allocPrint(std.heap.page_allocator, "Next Round: {d:.1}s", .{
                 break_remaining,
             }) catch "Next Round: ?";

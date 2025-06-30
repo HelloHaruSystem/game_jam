@@ -5,6 +5,7 @@ const rl = @cImport({
 
 const ProjectileAnimation = @import("../animation/projectileAnimation.zig").ProjectileAnimation;
 const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
+const RoundManager = @import("../utils/roundManager.zig").RoundManager;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const Projectile = struct {
@@ -109,7 +110,7 @@ pub const ProjectileManager = struct {
         try self.Projectiles.append(projectile);
     }
 
-    pub fn checkCollisionWithEnemies(self: *ProjectileManager, enemy_manager: *EnemyManager) void {
+    pub fn checkCollisionWithEnemies(self: *ProjectileManager, enemy_manager: *EnemyManager, round_manager: *RoundManager) void {
         for (self.Projectiles.items) |*projectile| {
             if (!projectile.active) continue;
 
@@ -123,9 +124,18 @@ pub const ProjectileManager = struct {
 
                 // check to see if the rectangles overlap
                 if (rl.CheckCollisionRecs(projectile_bounds, enemy_bounds)) {
+                    // store the enemy type before killing
+                    const enemy_type = enemy.enemy_type;
+                    const was_alive = enemy.current_health > 0;
+
                     // collision!
                     enemy.takeDamage(projectile.damage);
                     projectile.onHit();
+
+                    // if enemy died from the hit notify round manager
+                    if (was_alive and enemy.current_health == 0) {
+                        round_manager.onEnemyKilled(enemy_type);
+                    }
 
                     //TODO: play hit sound and do explosion animation
 

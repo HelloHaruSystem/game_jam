@@ -6,19 +6,17 @@ const rl = @cImport({
 const Player = @import("../player/player.zig").Player;
 const ProjectileManager = @import("../projectile/projectile.zig").ProjectileManager;
 const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
+const RoundManager = @import("../utils/roundManager.zig").RoundManager;
 const Input = @import("../player/input.zig").Input;
 const GameState = @import("../utils/gameState.zig").GameState;
 const GameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const PlayingState = struct {
-    // playing specific values/states
-    wave_number: u32,
-    score: u32,
+    round_manager: RoundManager,
 
     pub fn init() PlayingState{
         return PlayingState{
-            .wave_number = 1,
-            .score = 0,
+            .round_manager = RoundManager.init(),
         };
     }
 
@@ -30,13 +28,24 @@ pub const PlayingState = struct {
         input: Input,
         delta_time: f32,
         ) ?GameState {
+
+            // update round system
+            self.round_manager.update(delta_time);
+
             // update game entities
             player.update(input, delta_time);
             projectile_manager.update(delta_time);
-            enemy_manager.update(player.position, delta_time);
+
+            // only update enemies and spawn new ones during active rounds
+            if (self.round_manager.isRoundActive()) {
+                enemy_manager.updateWithRoundSystem(player.position, delta_time, &self.round_manager);
+            } else {
+                // during break just update existing enemies (letting them finishing moving/attacking)
+                enemy_manager.updateExistingEnemies(player.position, delta_time);
+            }
 
             // handle collision
-            projectile_manager.checkCollisionWithEnemies(enemy_manager);
+            projectile_manager.checkCollisionWithEnemies(enemy_manager, &self.round_manager);
             enemy_manager.checkCollisionWithPlayer(player);
 
             // check for game over
@@ -73,8 +82,11 @@ pub const PlayingState = struct {
     }
 
     pub fn reset(self: *PlayingState) void {
-        self.wave_number = 1;
-        self.score = 0;
+        self.round_manager.reset();
+    }
+
+    pub fn drawUI(self: *PlayingState) void {
+        self.round_manager.drawUI();
     }
 
     fn shouldPlayerShoot(self: *PlayingState, input: Input, player: *Player) bool {

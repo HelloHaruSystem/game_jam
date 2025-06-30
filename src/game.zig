@@ -137,6 +137,9 @@ pub const Game = struct {
         self.aim_circle.draw(self.player.position);
         self.projectile_manager.draw(self.textures.projectile);
         self.enemy_manager.draw(self.textures.enemy);
+
+        // draw system UI
+        self.playing_state.drawUI();
     }
 
     fn transitionToState(self: *Game, new_state: GameState) void {

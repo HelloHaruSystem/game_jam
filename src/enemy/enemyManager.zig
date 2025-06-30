@@ -5,20 +5,17 @@ const rl = @cImport({
 
 const enemy = @import("enemy.zig");
 const Player = @import("../player/player.zig").Player;
+const RoundManager = @import("../utils/roundManager.zig").RoundManager;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyManager = struct {
     enemies: std.ArrayList(enemy.Enemy),
     allocator: std.mem.Allocator,
-    spawn_timer: f32,
-    spawn_rate: f32,
 
     pub fn init(allocator: std.mem.Allocator) EnemyManager {
         return EnemyManager{
             .enemies = std.ArrayList(enemy.Enemy).init(allocator),
             .allocator = allocator,
-            .spawn_timer = 0.0,
-            .spawn_rate = 2.0, // spawn every 2 second
         };
     }
 
@@ -82,9 +79,22 @@ pub const EnemyManager = struct {
         }
     }
 
-    pub fn update(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
+    pub fn updateWithRoundSystem(self: *EnemyManager, Player_position: rl.Vector2, delta_time: f32, round_manager: *RoundManager) void {
+        // update existing enemies
+        self.updateExistingEnemies(Player_position, delta_time);
+
+        // spawn new enemies based on round system
+        if (round_manager.shouldSpawnEnemy()) {
+            const enemy_type = round_manager.getEnemyTypeToSpawn();
+            self.spawnAEdge(enemy_type) catch |err| {
+                std.debug.print("Failed to spawn enemy: {}\n", .{err});
+            };
+        }
+    }
+
+    pub fn updateExistingEnemies(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
         // update all enemies
-        for(self.enemies.items) |*e| {
+        for (self.enemies.items) |*e| {
             e.update(player_position, delta_time);
         }
 
@@ -97,13 +107,11 @@ pub const EnemyManager = struct {
                 i += 1;
             }
         }
+    }
 
-        // auto sawn enemies
-        self.spawn_timer += delta_time;
-        if (self.spawn_timer >= self.spawn_rate) {
-            self.spawnAEdge(.small_fast) catch {}; // simple spawn logic    TODO: make this it's own function and expand on the system
-            self.spawn_timer = 0.0;
-        }
+    // deprecated
+    pub fn update(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
+       self.updateExistingEnemies(player_position, delta_time);
     }
 
     pub fn draw(self: *const EnemyManager, texture: rl.Texture2D) void {
@@ -114,5 +122,13 @@ pub const EnemyManager = struct {
 
     pub fn clear(self: *EnemyManager) void {
         self.enemies.clearRetainingCapacity();
+    }
+
+    pub fn getEnemyCount(self: *const EnemyManager) usize {
+        var count: usize = 0;
+        for (self.enemies.items) |*e| {
+            if (e.active) count += 1;
+        }
+        return count;
     }
 };

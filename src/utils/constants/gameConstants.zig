@@ -42,22 +42,22 @@ pub const DEFAULT_ENEMY_SPAWN_OFFSET = 50; // pixels outside screen
 pub const SMALL_ENEMY_HEALTH = 2;
 pub const SMALL_ENEMY_SPEED = 220.0;
 pub const SMALL_ENEMY_SCALE = 1.3;
-pub const SMALL_ENEMY_SCORE = 10;
+pub const SMALL_ENEMY_SCORE: u32 = 10;
 
 pub const MEDIUM_ENEMY_HEALTH = 3;
 pub const MEDIUM_ENEMY_SPEED = 80.0;
 pub const MEDIUM_ENEMY_SCALE = 1.0;
-pub const MEDIUM_ENEMY_SCORE = 25;
+pub const MEDIUM_ENEMY_SCORE: u32 = 25;
 
 pub const LARGE_ENEMY_HEALTH = 5;
 pub const LARGE_ENEMY_SPEED = 50.0;
 pub const LARGE_ENEMY_SCALE = 1.5;
-pub const LARGE_ENEMY_SCORE = 50;
+pub const LARGE_ENEMY_SCORE: u32 = 50;
 
 pub const BOSS_ENEMY_HEALTH = 20;
 pub const BOSS_ENEMY_SPEED = 30.0;
 pub const BOSS_ENEMY_SCALE = 2.0;
-pub const BOSS_ENEMY_SCORE = 200;
+pub const BOSS_ENEMY_SCORE: u32 = 200;
 
 // Combat constants
 pub const DEFAULT_ENEMY_DAMAGE = 1;
