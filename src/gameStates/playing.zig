@@ -85,10 +85,6 @@ pub const PlayingState = struct {
         self.round_manager.reset();
     }
 
-    pub fn drawUI(self: *PlayingState) void {
-        self.round_manager.drawUI();
-    }
-
     fn shouldPlayerShoot(self: *PlayingState, input: Input, player: *Player) bool {
         _ = self; // not used
         return input.shoot and player.canShoot() and !player.animation.isAttacking();

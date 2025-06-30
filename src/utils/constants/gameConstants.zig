@@ -1,3 +1,7 @@
+const rl = @cImport({
+    @cInclude("raylib.h");
+});
+
 // windows consts
 pub const WINDOW_WIDTH = 1280;
 pub const WINDOW_HEIGHT = 720;
@@ -70,8 +74,17 @@ pub const PLAYER_ATTACK_ANIMATION_SPEED = 0.04; // faster attack animation
 pub const ENEMY_ANIMATION_SPEED = 0.15;
 pub const PROJECTILE_ANIMATION_SPEED = 0.08;
 
-// UI constants
+// gameplay UI constants
 pub const PLAYER_FLASH_SPEED = 10.0; // flashes per second when invincible
+// UI
+pub const UI_TOP_LINE_Y = 20;
+pub const UI_TOP_LINE_X = 20;
+pub const UI_TEXT_COLOR = rl.WHITE;
+pub const UI_FONT_SIZE = 24;
+pub const UI_SMALL_FONT_SIZE = 20;
+
+pub const HEART_SIZE = 30;
+pub const HEART_SPACING = 40;
 
 // Sprite file names
 pub const PLAYER_SPRITE_SHEET = "player_spritesheet.png";
@@ -79,7 +92,7 @@ pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
 pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
 
 // Rounds values
-pub const DEFAULT_ROUND_DURATION = 30.0; // each round is 30 seconds
-pub const DEFAULT_BREAK_DURATION = 5.0;  // 5 second break between rounds
+pub const DEFAULT_ROUND_DURATION = 20.0; // each round is 30 seconds
+pub const DEFAULT_BREAK_DURATION = 10.0;  // 5 second break between rounds
 pub const BASE_SPAWN_RATE = 2.0;         // spawns every 2 second
 pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 seconds
