@@ -1,3 +1,7 @@
+const rl = @cImport({
+    @cInclude("raylib.h");
+});
+
 // windows consts
 pub const WINDOW_WIDTH = 1280;
 pub const WINDOW_HEIGHT = 720;
@@ -73,7 +77,14 @@ pub const PROJECTILE_ANIMATION_SPEED = 0.08;
 // gameplay UI constants
 pub const PLAYER_FLASH_SPEED = 10.0; // flashes per second when invincible
 // UI
+pub const UI_TOP_LINE_Y = 20;
+pub const UI_TOP_LINE_X = 20;
+pub const UI_TEXT_COLOR = rl.WHITE;
+pub const UI_FONT_SIZE = 24;
+pub const UI_SMALL_FONT_SIZE = 20;
 
+pub const HEART_SIZE = 30;
+pub const HEART_SPACING = 40;
 
 // Sprite file names
 pub const PLAYER_SPRITE_SHEET = "player_spritesheet.png";
