@@ -6,6 +6,7 @@ const rl = @cImport({
 const ProjectileAnimation = @import("../animation/projectileAnimation.zig").ProjectileAnimation;
 const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
 const win_consts = @import("../utils/constants/screenAndWindow.zig");
+const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const Projectile = struct {
     position: rl.Vector2,
@@ -25,14 +26,14 @@ pub const Projectile = struct {
             },
             .active = true,
             .life_time = 0.0,
-            .time_to_live = 3.0, // projectile dies after 3 seconds
+            .time_to_live = gameConstants.DEFAULT_PROJECTILE_LIFETIME, // projectile dies after 3 seconds
             .animation = ProjectileAnimation.init(),
-            .damage = 1, // default dmg value //TODO: change this to come from player as the player powers up
+            .damage = gameConstants.DEFAULT_PROJECTILE_DAMAGE, // default dmg value //TODO: change this to come from player as the player powers up
         };
     }
 
     pub fn getBounds(self: *const Projectile) rl.Rectangle {
-        const projectile_size = 16.0 * 2.0;    // 16x16 sprite * 2 scale from animation //TODO: add scale and sprite size as constants in it's own file!
+        const projectile_size = 16.0 * gameConstants.DEFAULT_PROJECTILE_SCALE;    // 16x16 sprite * 2 scale from animation //TODO: add scale and sprite size as constants in it's own file!
         return rl.Rectangle{
             .x = self.position.x - (projectile_size / 2),
             .y = self.position.y - (projectile_size / 2),
@@ -63,8 +64,8 @@ pub const Projectile = struct {
         self.animation.update(delta_time);
 
         // bounds check for screen set non active when reaches outside
-        if (self.position.x < - 20 or self.position.x > @as(f32, @floatFromInt(win_consts.WINDOW_WIDTH + 20)) or
-            self.position.y < - 20 or self.position.y > @as(f32, @floatFromInt(win_consts.WINDOW_HEIGHT + 20))) {
+        if (self.position.x < - 20 or self.position.x > @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH + 20)) or
+            self.position.y < - 20 or self.position.y > @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT + 20))) {
                 self.active = false;
         }
     }   
