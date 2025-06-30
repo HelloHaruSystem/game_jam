@@ -91,7 +91,7 @@ pub const UI = struct {
     fn drawRoundInfo(self: *UI, round_manager: *const RoundManager) void {
         const round_text = std.fmt.allocPrint(self.allocator, "Round: {d}", .{
             round_manager.current_round,
-        }) catch return "Round: ?";
+        }) catch "Round: ?";
         defer self.allocator.free(round_text);
         const round_text_c = self.allocator.dupeZ(u8, round_text) catch return;
         defer self.allocator.free(round_text_c);
@@ -109,7 +109,7 @@ pub const UI = struct {
     fn drawScore(self: *UI, round_manager: *const RoundManager) void {
         const score_text = std.fmt.allocPrint(self.allocator, "Score: {d}", .{
             round_manager.score, 
-        }) catch return "Score: ?";
+        }) catch "Score: ?";
         defer self.allocator.free(score_text);
         const score_text_c = self.allocator.dupeZ(u8, score_text) catch return;
         defer self.allocator.free(score_text_c);
@@ -129,7 +129,7 @@ pub const UI = struct {
             const time_remaining = round_manager.getRoundTimeRemaining();
             const timer_text = std.fmt.allocPrint(self.allocator, "Time: {d:.1}s", .{
                 time_remaining, 
-            }) catch return "Time: ?";
+            }) catch "Time: ?";
             defer self.allocator.free(timer_text);
             const time_text_c = self.allocator.dupeZ(u8, timer_text) catch return;
             defer self.allocator.free(time_text_c);
@@ -145,7 +145,7 @@ pub const UI = struct {
             const break_remaining = round_manager.getBreakTimeRemaining();
             const break_text = std.fmt.allocPrint(self.allocator, "Next Round: {d:.1}s", .{
                 break_remaining,
-            }) catch return "Next Round: =";
+            }) catch "Next Round: =";
             defer self.allocator.free(break_text);
             const break_text_c = self.allocator.dupeZ(u8, break_text) catch return;
             defer self.allocator.free(break_text_c);
@@ -163,7 +163,7 @@ pub const UI = struct {
     fn drawKillCount(self: *UI, round_manager: *const RoundManager) void {
         const kill_text = std.fmt.allocPrint(self.allocator, "Kills: {d}", .{
             round_manager.enemies_killed_this_round, 
-        }) catch return "Kills: ?";
+        }) catch "Kills: ?";
         defer self.allocator.free(kill_text);
         const kill_text_c = self.allocator.dupeZ(u8, kill_text) catch return;
         defer self.allocator.free(kill_text_c);

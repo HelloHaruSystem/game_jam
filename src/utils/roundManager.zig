@@ -177,98 +177,30 @@ pub const RoundManager = struct {
         }
     }
 
-    pub fn getRoundTimeRemaining(self: *RoundManager) f32 {
+    pub fn getRoundTimeRemaining(self: *const RoundManager) f32 {
         if (self.round_state == .active) {
             return @max(0.0, self.round_duration - self.round_timer);
         }
         return 0.0;
     }
 
-    pub fn getBreakTimeRemaining(self: *RoundManager) f32 {
+    pub fn getBreakTimeRemaining(self: *const RoundManager) f32 {
         if (self.round_state == .break_time) {
             return @max(0.0, self.break_duration - self.break_timer);
         }
         return 0.0;
     }
 
-    pub fn isRoundActive(self: *RoundManager) bool {
+    pub fn isRoundActive(self: *const RoundManager) bool {
         return self.round_state == .active;
     }
 
-    pub fn isBreakTime(self: *RoundManager) bool {
+    pub fn isBreakTime(self: *const RoundManager) bool {
         return self.round_state == .break_time;
     }
 
     pub fn reset(self: *RoundManager) void {
         self.* = RoundManager.init();
-    }
-
-    // move this to it's own ui file!
-    pub fn drawUI(self: *RoundManager) void {
-        // TODO: move some of these values to gameConstants file
-        const ui_color = rl.WHITE;
-        const font_size = 24;
-        const small_font_size = 20;
-
-        // round info
-        // TODO: pass in an allocator here!
-        const round_text = std.fmt.allocPrint(std.heap.page_allocator, "Round: {d}", .{
-            self.current_round,
-        }) catch "Round: ?";
-        defer std.heap.page_allocator.free(round_text);
-        const round_text_c = std.heap.page_allocator.dupeZ(u8, round_text) catch return;
-        defer std.heap.page_allocator.free(round_text_c);
-
-        // TODO: add the positions to constants
-        rl.DrawText(round_text_c.ptr, 20, 20, font_size, ui_color);
-
-        // score
-        const score_text = std.fmt.allocPrint(std.heap.page_allocator, "Score: {d}", .{
-            self.score,
-        }) catch "Score: ?";
-        defer std.heap.page_allocator.free(score_text);
-        const score_text_c = std.heap.page_allocator.dupeZ(u8, score_text) catch return;
-        defer std.heap.page_allocator.free(score_text_c);
-
-        // TODO: add the positions to constants
-        rl.DrawText(score_text_c, 20, 50, font_size, ui_color);
-
-        // timer
-        if (self.round_state == .active) {
-            const time_remaining = self.getRoundTimeRemaining();
-            const timer_text = std.fmt.allocPrint(std.heap.page_allocator, "Time: {d:.1}s", .{
-                time_remaining,
-            }) catch "Time: ?";
-            defer std.heap.page_allocator.free(timer_text);
-            const timer_text_c = std.heap.page_allocator.dupeZ(u8, timer_text) catch return;
-            defer std.heap.page_allocator.free(timer_text_c);
-
-            // TODO: add the positions to constants
-            rl.DrawText(timer_text_c, 20, 80, small_font_size, ui_color);
-        }
-        else if (self.round_state == .break_time) {
-            const break_remaining = self.getBreakTimeRemaining();
-            const break_text = std.fmt.allocPrint(std.heap.page_allocator, "Next Round: {d:.1}s", .{
-                break_remaining,
-            }) catch "Next Round: ?";
-            defer std.heap.page_allocator.free(break_text);
-            const break_text_c = std.heap.page_allocator.dupeZ(u8, break_text) catch return;
-            defer std.heap.page_allocator.free(break_text_c);
-            
-            // TODO: add the positions to constants
-            rl.DrawText(break_text_c, 20, 80, small_font_size, rl.YELLOW);
-        }
-
-        // kills this round
-        const kills_text = std.fmt.allocPrint(std.heap.page_allocator, "Kills: {d}", .{
-            self.enemies_killed_this_round,
-        }) catch "Kills: ?";
-        defer std.heap.page_allocator.free(kills_text);
-        const kills_text_c = std.heap.page_allocator.dupeZ(u8, kills_text) catch return;
-        defer std.heap.page_allocator.free(kills_text_c);
-
-        // TODO: add the positions to constants
-        rl.DrawText(kills_text_c, 20, 110, small_font_size, ui_color);
     }
 };
 

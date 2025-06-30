@@ -147,7 +147,7 @@ pub const Game = struct {
         self.enemy_manager.draw(self.textures.enemy);
 
         // draw the ui elements
-        self.ui.drawGameOverUI(&self.player, &self.playing_state.round_manager);
+        self.ui.drawGameplayUI(&self.player, &self.playing_state.round_manager);
 
         // TODO: optional make a debug ui overlay
     }
