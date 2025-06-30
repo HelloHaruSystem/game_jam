@@ -5,7 +5,6 @@ const rl = @cImport({
 
 const ProjectileAnimation = @import("../animation/projectileAnimation.zig").ProjectileAnimation;
 const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
-const win_consts = @import("../utils/constants/screenAndWindow.zig");
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const Projectile = struct {
@@ -33,7 +32,7 @@ pub const Projectile = struct {
     }
 
     pub fn getBounds(self: *const Projectile) rl.Rectangle {
-        const projectile_size = 16.0 * gameConstants.DEFAULT_PROJECTILE_SCALE;    // 16x16 sprite * 2 scale from animation //TODO: add scale and sprite size as constants in it's own file!
+        const projectile_size = 16.0 * gameConstants.DEFAULT_PROJECTILE_SCALE;
         return rl.Rectangle{
             .x = self.position.x - (projectile_size / 2),
             .y = self.position.y - (projectile_size / 2),

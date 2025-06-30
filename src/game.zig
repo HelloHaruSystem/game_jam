@@ -10,7 +10,7 @@ const ProjectileManager = @import("projectile/projectile.zig").ProjectileManager
 const EnemyManager = @import("enemy/enemyManager.zig").EnemyManager;
 const GameState = @import("utils/gameState.zig").GameState;
 const textureLoader = @import("utils/textureLoader.zig");
-const win_const = @import("utils/constants/screenAndWindow.zig");
+const gameConst = @import("utils/constants/gameConstants.zig");
 
 // game state handlers
 const PlayingState = @import("gameStates/playing.zig").PlayingState;
@@ -28,7 +28,7 @@ pub const Game = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
-        rl.InitWindow(win_const.WINDOW_WIDTH, win_const.WINDOW_HEIGHT, "Haru Jam");
+        rl.InitWindow(gameConst.WINDOW_WIDTH, gameConst.WINDOW_HEIGHT, "Haru Jam");
         rl.SetTargetFPS(60);
 
         const textures = try GameTextures.init(allocator);
@@ -166,9 +166,9 @@ pub const GameTextures = struct {
 
     pub fn init(allocator: std.mem.Allocator) !GameTextures {
         return GameTextures{
-            .player = try textureLoader.loadSprite(allocator, "player_spritesheet.png"),
-            .projectile = try textureLoader.loadSprite(allocator, "projectile_spritesheet.png"),
-            .enemy = try textureLoader.loadSprite(allocator, "enemy_spritesheet.png"),
+            .player = try textureLoader.loadSprite(allocator, gameConst.PLAYER_SPRITE_SHEET),
+            .projectile = try textureLoader.loadSprite(allocator, gameConst.PROJECTILE_SPRITE_SHEET),
+            .enemy = try textureLoader.loadSprite(allocator, gameConst.ENEMY_SPRITE_SHEET),
         };
     }
 

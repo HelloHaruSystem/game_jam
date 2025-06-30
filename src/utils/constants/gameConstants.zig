@@ -68,3 +68,8 @@ pub const PROJECTILE_ANIMATION_SPEED = 0.08;
 
 // UI constants
 pub const PLAYER_FLASH_SPEED = 10.0; // flashes per second when invincible
+
+// Sprite file names
+pub const PLAYER_SPRITE_SHEET = "player_spritesheet.png";
+pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
+pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
