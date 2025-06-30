@@ -70,8 +70,10 @@ pub const PLAYER_ATTACK_ANIMATION_SPEED = 0.04; // faster attack animation
 pub const ENEMY_ANIMATION_SPEED = 0.15;
 pub const PROJECTILE_ANIMATION_SPEED = 0.08;
 
-// UI constants
+// gameplay UI constants
 pub const PLAYER_FLASH_SPEED = 10.0; // flashes per second when invincible
+// UI
+
 
 // Sprite file names
 pub const PLAYER_SPRITE_SHEET = "player_spritesheet.png";
