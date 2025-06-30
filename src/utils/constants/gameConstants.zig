@@ -73,3 +73,7 @@ pub const PLAYER_FLASH_SPEED = 10.0; // flashes per second when invincible
 pub const PLAYER_SPRITE_SHEET = "player_spritesheet.png";
 pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
 pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
+
+// Rounds values
+pub const DEFAULT_ROUND_DURATION = 30.0; // each round is 30 seconds
+pub const DEFAULT_BREAK_DURATION = 5.0;
