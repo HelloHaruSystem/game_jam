@@ -46,6 +46,7 @@ pub const Tilemap = struct {
 
         const csv_content = std.fs.cwd().readFileAlloc(allocator, csv_path, 1024 * 1024) catch |err| {
             std.debug.print("Failed to load tilemap CSV: {}\n", .{err});
+            return err;
         };
         defer allocator.free(csv_content);
 
@@ -82,7 +83,7 @@ pub const Tilemap = struct {
     fn parseCsv(self: *Tilemap, csv_content: []const u8) !void {
         // count rows first
         var line_count: u32 = 0;
-        var lines = std.mem.SplitIterator(u8, csv_content, "\n");
+        var lines = std.mem.splitSequence(u8, csv_content, "\n");
         while (lines.next()) |_| {
             line_count += 1;
         }
@@ -90,10 +91,10 @@ pub const Tilemap = struct {
         if (line_count == 0) return error.EmptyCSV;
 
         // Parse first line to get width
-        lines = std.mem.SplitIterator(u8, csv_content, "\n");
+        lines = std.mem.splitSequence(u8, csv_content, "\n");
         const first_line = lines.next() orelse return error.EmptyCSV;
         var col_count: u32 = 0;
-        var values = std.mem.SplitIterator(u8, first_line, ",");
+        var values = std.mem.splitSequence(u8, first_line, ",");
         while (values.next()) |_| {
             col_count += 1;
         }
@@ -103,18 +104,18 @@ pub const Tilemap = struct {
 
         // allocate tile data
         self.tile_data = try self.allocator.alloc([]u8, self.map_height);
-        for (self.tile_data, 0..) |*row, _| {
-            row.* = try self.allocator.alignedAlloc(u8, self.map_width);
+        for (self.tile_data) |*row| {
+            row.* = try self.allocator.alloc(u8, self.map_width);
         }
 
         // parse all lines
-        lines = std.mem.SplitIterator(u8, csv_content, "\n");
+        lines = std.mem.splitSequence(u8, csv_content, "\n");
         var row: u32 = 0;
         while (lines.next()) |line| : (row += 1) {
             if (row >= self.map_height) break;
 
             var col: u32 = 0;
-            var line_values = std.mem.SplitIterator(u8, line, ",");
+            var line_values = std.mem.splitSequence(u8, line, ",");
             while (line_values.next()) |value_str| : (col += 1) {
                 if (col >= self.map_width) break;
 

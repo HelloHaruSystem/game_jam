@@ -99,5 +99,5 @@ pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 second
 
 // Tilemap constants
 pub const TILE_SIZE: f32 = 16.0;
-pub const MAP_WIDTH_TILES: u32 = WINDOW_WIDTH / 2;
-pub const MAP_HEIGHT_TILES: u32 = WINDOW_HEIGHT / 2; 
+pub const MAP_WIDTH_TILES: u32 = WINDOW_WIDTH / TILE_SIZE;
+pub const MAP_HEIGHT_TILES: u32 = WINDOW_HEIGHT / TILE_SIZE; 
