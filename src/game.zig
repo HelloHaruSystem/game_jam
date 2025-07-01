@@ -15,6 +15,7 @@ const gameConst = @import("utils/constants/gameConstants.zig");
 
 // game state handlers
 const StartMenuState = @import("gameStates/startMenu.zig").StartMenuState;
+const ControlsMenuState = @import("gameStates/controlsMenu.zig").ControlsMenuState;
 const PlayingState = @import("gameStates/playing.zig").PlayingState;
 const PauseMenuState = @import("gameStates/pauseMenu.zig").PauseMenuState;
 const GameOverState = @import("gameStates/gameOver.zig").GameOverState;
@@ -27,6 +28,7 @@ pub const Game = struct {
     enemy_manager:EnemyManager,
     current_state: GameState,
     start_menu_state: StartMenuState,
+    controls_menu_state: ControlsMenuState,
     playing_state: PlayingState,
     pause_menu_state: PauseMenuState,
     game_over_state: GameOverState,
@@ -53,6 +55,7 @@ pub const Game = struct {
             .enemy_manager = enemy_manager,
             .current_state = GameState.start_menu, // TODO: when menu is added start at the start menu
             .start_menu_state = StartMenuState.init(),
+            .controls_menu_state = ControlsMenuState.init(),
             .playing_state = PlayingState.init(),
             .pause_menu_state = PauseMenuState.init(),
             .game_over_state = GameOverState.init(),
@@ -84,6 +87,12 @@ pub const Game = struct {
         switch (self.current_state) {
             .start_menu => {
                 const next_state = self.start_menu_state.update(input);
+                if (next_state) |state| {
+                    self.transitionToState(state);
+                }
+            },
+            .controls => {
+                const next_state = self.controls_menu_state.update(input);
                 if (next_state) |state| {
                     self.transitionToState(state);
                 }
@@ -134,6 +143,9 @@ pub const Game = struct {
         switch (self.current_state) {
             .start_menu => {
                 self.ui.drawStartMenu(self.start_menu_state.selected_option);
+            },
+            .controls => {
+                self.ui.drawControlsMenu();
             },
             .pause_menu => {
                 // first draw the game background (paused state)

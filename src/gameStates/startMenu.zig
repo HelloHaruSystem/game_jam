@@ -12,7 +12,8 @@ pub const StartMenuState = struct {
 
     const MenuOptions = enum(u32) {
         start_game = 0,
-        quit = 1,
+        controls = 1,
+        quit = 2,
     };
 
     pub fn init() StartMenuState {
@@ -31,7 +32,7 @@ pub const StartMenuState = struct {
         }
 
         if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyPressed(rl.KEY_S)) {
-            if (self.selected_option < 1) { // 0 and 1 are valid options
+            if (self.selected_option < 2) { 
                 self.selected_option += 1;
             }
         }
@@ -42,6 +43,10 @@ pub const StartMenuState = struct {
                 .start_game => {
                     self.selected_option = 0; // Reset selection
                     return GameState.playing;
+                },
+                .controls => {
+                    self.selected_option = 0;
+                    return GameState.controls;
                 },
                 .quit => {
                     self.selected_option = 0;
