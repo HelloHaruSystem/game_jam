@@ -5,4 +5,5 @@ pub const GameState = enum {
     round_break,
     shopping,
     game_over,
+    quit,
 };

@@ -66,7 +66,7 @@ pub const Game = struct {
     }
 
     pub fn run(self: *Game) void {
-        while (!rl.WindowShouldClose()) {
+        while (!rl.WindowShouldClose() and self.current_state != .quit) {
             self.update();
             self.draw();
         }
@@ -112,6 +112,10 @@ pub const Game = struct {
                     self.transitionToState(state);
                 }
             },
+            .quit => {
+                // Quit state - do nothing, just let the main loop handle it
+                // The run() function will exit when it sees this state
+            },
         }
     }
 
@@ -143,6 +147,9 @@ pub const Game = struct {
                     self.game_over_state.final_round,
                 );
             },
+            .quit => {
+                // Don't draw anything when quitting
+            }
         }
     }
 

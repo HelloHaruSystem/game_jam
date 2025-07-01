@@ -58,8 +58,8 @@ pub const GameOverState = struct {
                     return GameState.start_menu;
                 },
                 .quit => {
-                    // For now just close the window
-                    rl.CloseWindow();
+                    self.selected_option = 0;
+                    return GameState.quit;
                 },
             }
         }

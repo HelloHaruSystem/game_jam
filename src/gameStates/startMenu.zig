@@ -44,9 +44,8 @@ pub const StartMenuState = struct {
                     return GameState.playing;
                 },
                 .quit => {
-                    // For now just close the window
-                    rl.CloseWindow();
-                    return null;
+                    self.selected_option = 0;
+                    return GameState.quit;
                 },
             }
         }
