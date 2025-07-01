@@ -67,7 +67,7 @@ pub const BOSS_ENEMY_SCORE: u32 = 200;
 // Combat constants
 pub const DEFAULT_ENEMY_DAMAGE = 1;
 pub const DEFAULT_KNOCKBACK_STRENGTH = 2000.0;
-pub const HIT_FLASH_DURATION = 0.2; // seconds
+pub const HIT_FLASH_DURATION = 0.2;          // seconds
 
 // Animation timing constants
 pub const PLAYER_ANIMATION_SPEED = 0.15; // seconds per frame
@@ -93,10 +93,10 @@ pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
 pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
 
 // Rounds values
-pub const DEFAULT_ROUND_DURATION = 20.0; // each round is 30 seconds
-pub const DEFAULT_BREAK_DURATION = 10.0;  // 5 second break between rounds
-pub const BASE_SPAWN_RATE = 2.0;         // spawns every 2 second
-pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 seconds
+pub const DEFAULT_ROUND_DURATION = 20.0;  // each round is 30 seconds
+pub const DEFAULT_BREAK_DURATION = 10.0;  // 10 second break between rounds
+pub const BASE_SPAWN_RATE = 2.0;          // spawns every 2 second
+pub const MIN_SPAWN_RATE = 0.3;           // spawn rate can't go below 0.3 seconds
 
 // Tilemap constants
 pub const TILE_SIZE: f32 = 16.0;
