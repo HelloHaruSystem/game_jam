@@ -5,6 +5,7 @@ const rl = @cImport({
 
 const PlayerAnimation = @import("../animation/PlayerAnimation.zig").PlayerAnimation;
 const Input = @import("input.zig").Input;
+const Tilemap = @import("../tilemap/tilemap.zig").Tilemap;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const Player = struct {
@@ -55,7 +56,7 @@ pub const Player = struct {
     }
 
     // TODO: split this function up into smaller helper functions
-    pub fn update(self: *Player, input: Input, delta_time: f32) void {
+    pub fn update(self: *Player, input: Input, delta_time: f32, tilemap: ?*const Tilemap) void {
         // check if player is trying to move
         const movement = input.getMovementVector();
         const was_moving = self.is_moving;
@@ -68,46 +69,56 @@ pub const Player = struct {
             } else if (movement.x > 0) {
                 self.facing_left = false;    // facing right
             }
-            // in cae of only vertical moving keep the current direction
         }
 
-        // calculate movement (combine input + knock back)
-        var total_movement = rl.Vector2{ .x = 0, .y = 0, };
-        
-        // add player input movement
+        // Handle movement with tilemap collision
         if (self.is_moving) {
-            total_movement.x = movement.x * self.speed * delta_time;
-            total_movement.y = movement.y * self.speed * delta_time;
+            if (tilemap) |tm| {
+                self.moveWithTileCollision(movement, delta_time, tm);
+            } else {
+                self.moveWithoutTilemap(movement, delta_time);
+            }
         }
 
-        // add knock back movement
-        total_movement.x += self.knock_back_velocity.x * delta_time;
-        total_movement.y += self.knock_back_velocity.y * delta_time;
-
-        // apply the total movement
-        if (total_movement.x != 0.0 or total_movement.y != 0.0) {
-            const new_position = rl.Vector2{
-                .x = self.position.x + total_movement.x,
-                .y = self.position.y + total_movement.y,
+        // Handle knockback movement (separate from input movement) - FIXED VERSION
+        if (self.knock_back_velocity.x != 0.0 or self.knock_back_velocity.y != 0.0) {
+            const knockback_movement = rl.Vector2{
+                .x = self.knock_back_velocity.x * delta_time,
+                .y = self.knock_back_velocity.y * delta_time,
             };
-            const player_sprite_size = gameConstants.PLAYER_SPRITE_SIZE;
-            self.position = clampToScreen(new_position, player_sprite_size);
+
+            const new_position = rl.Vector2{
+                .x = self.position.x + knockback_movement.x,
+                .y = self.position.y + knockback_movement.y,
+            };
+
+            // FIRST clamp to screen bounds to prevent out-of-bounds
+            const clamped_position = clampToScreen(new_position, gameConstants.PLAYER_SPRITE_SIZE);
+
+            // THEN check tilemap collision with the clamped position
+            const valid = if (tilemap) |tm| 
+                self.isPositionValid(clamped_position, tm) 
+            else 
+                true;
+            
+            if (valid) {
+                self.position = clamped_position;
+            }
+
+            // Apply knockback friction
+            self.knock_back_velocity.x *= (1.0 - self.knock_back_friction * delta_time);
+            self.knock_back_velocity.y *= (1.0 - self.knock_back_friction * delta_time);
+
+            // Stop very small knockbacks
+            if (@abs(self.knock_back_velocity.x) < 1.0) {
+                self.knock_back_velocity.x = 0.0;
+            }
+            if (@abs(self.knock_back_velocity.y) < 1.0) {
+                self.knock_back_velocity.y = 0.0;
+            }
         }
 
-        // apply the knock back friction
-        self.knock_back_velocity.x *= (1.0 - self.knock_back_friction * delta_time);
-        self.knock_back_velocity.y *= (1.0 - self.knock_back_friction * delta_time);
-
-        // stop very small knock backs
-        if (@abs(self.knock_back_velocity.x) < 1.0) {
-            self.knock_back_velocity.x = 0.0;
-        }
-        if (@abs(self.knock_back_velocity.y) < 1.0) {
-            self.knock_back_velocity.y = 0.0;
-        }
-
-        // reset frame when switching between idle and walking for smooths transitions (nice)
-        // but not when attacking
+        // reset frame when switching between idle and walking
         if (was_moving != self.is_moving and !self.animation.isAttacking()) {
             self.animation.resetFrame();
         }
@@ -126,6 +137,105 @@ pub const Player = struct {
         }
 
         self.animation.update(self, delta_time);
+    }
+
+    fn moveWithTileCollision(self: *Player, movement: Input.MovementVector, delta_time: f32, tilemap: *const Tilemap) void {
+        // Get movement modifier from current tile
+        const current_modifier = tilemap.getMovementModifierAt(
+            self.position.x + gameConstants.PLAYER_SPRITE_SIZE / 2,
+            self.position.y + gameConstants.PLAYER_SPRITE_SIZE / 2
+        );
+
+        // Calculate movement with tile modifier
+        const modified_speed = self.speed * current_modifier;
+        const move_x = movement.x * modified_speed * delta_time;
+        const move_y = movement.y * modified_speed * delta_time;
+
+        // Try diagonal movement first (feels more natural)
+        var new_position = rl.Vector2{
+            .x = self.position.x + move_x,
+            .y = self.position.y + move_y,
+        };
+    
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position = new_position;
+            self.position = clampToScreen(self.position, gameConstants.PLAYER_SPRITE_SIZE);
+            return;
+        }
+
+        // If diagonal failed, try horizontal movement
+        new_position = rl.Vector2{
+            .x = self.position.x + move_x,
+            .y = self.position.y,
+        };
+    
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position.x = new_position.x;
+        }
+
+        // Then try vertical movement
+        new_position = rl.Vector2{
+            .x = self.position.x,
+            .y = self.position.y + move_y,
+        };
+    
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position.y = new_position.y;
+        }
+
+        // Clamp to screen bounds
+        self.position = clampToScreen(self.position, gameConstants.PLAYER_SPRITE_SIZE);
+    }
+
+    fn moveWithoutTilemap(self: *Player, movement: Input.MovementVector, delta_time: f32) void {
+        // Your original movement code
+        const total_movement = rl.Vector2{
+            .x = movement.x * self.speed * delta_time,
+            .y = movement.y * self.speed * delta_time,
+        };
+    
+        const new_position = rl.Vector2{
+            .x = self.position.x + total_movement.x,
+            .y = self.position.y + total_movement.y,
+        };
+    
+        self.position = clampToScreen(new_position, gameConstants.PLAYER_SPRITE_SIZE);
+    }
+
+    fn isPositionValid(self: *const Player, position: rl.Vector2, tilemap: *const Tilemap) bool {
+        _ = self;
+        const sprite_size = gameConstants.PLAYER_SPRITE_SIZE;
+        const margin = gameConstants.PLAYER_COLLISION_MARGIN;
+    
+        // smaller collision box by adding margin to all sides
+        const collision_box = rl.Rectangle{
+            .x = position.x + margin,
+            .y = position.y + margin,
+            .width = sprite_size - (margin * 2),
+            .height = sprite_size - (margin * 2),
+        };
+
+        const check_points = [_]rl.Vector2{
+            // Four corners of the smaller collision box
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y },                                                    // Top-left
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y },                              // Top-right
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y + collision_box.height },                             // Bottom-left
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y + collision_box.height },       // Bottom-right
+        
+            // Center points on each edge for better detection
+            rl.Vector2{ .x = collision_box.x + collision_box.width / 2, .y = collision_box.y },                         // Top-center
+            rl.Vector2{ .x = collision_box.x + collision_box.width / 2, .y = collision_box.y + collision_box.height },  // Bottom-center
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y + collision_box.height / 2 },        // Left-center
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y + collision_box.height / 2 },  // Right-center
+        };
+    
+        for (check_points) |point| {
+            if (tilemap.isPositionSolid(point.x, point.y)) {
+                return false;
+            }
+        }
+    
+        return true;
     }
 
     pub fn draw(self: *Player, texture: rl.Texture2D) void {
@@ -157,13 +267,12 @@ pub const Player = struct {
     }
 
     pub fn getBounds(self: *const Player) rl.Rectangle {
-        //TODO: move this to a file holding consts
-        const player_sprite_size = 32.0;
+        const margin = gameConstants.PLAYER_COLLISION_MARGIN;
         return rl.Rectangle{
-            .x = self.position.x,
-            .y = self.position.y,
-            .width = player_sprite_size,
-            .height = player_sprite_size,
+            .x = self.position.x + margin,
+            .y = self.position.y + margin,
+            .width = gameConstants.PLAYER_SPRITE_SIZE - (margin * 2),
+            .height = gameConstants.PLAYER_SPRITE_SIZE - (margin * 2),
         };
     }
 

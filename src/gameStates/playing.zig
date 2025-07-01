@@ -9,6 +9,7 @@ const EnemyManager = @import("../enemy/enemyManager.zig").EnemyManager;
 const RoundManager = @import("../utils/roundManager.zig").RoundManager;
 const Input = @import("../player/input.zig").Input;
 const GameState = @import("../utils/gameState.zig").GameState;
+const TileMap = @import("../tilemap//tilemap.zig").Tilemap;
 const GameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const PlayingState = struct {
@@ -27,13 +28,14 @@ pub const PlayingState = struct {
         enemy_manager: *EnemyManager,
         input: Input,
         delta_time: f32,
+        tilemap: ?*const TileMap,
         ) ?GameState {
 
             // update round system
             self.round_manager.update(delta_time);
 
             // update game entities
-            player.update(input, delta_time);
+            player.update(input, delta_time, tilemap);
             projectile_manager.update(delta_time);
 
             // only update enemies and spawn new ones during active rounds

@@ -11,6 +11,7 @@ const EnemyManager = @import("enemy/enemyManager.zig").EnemyManager;
 const GameState = @import("utils/gameState.zig").GameState;
 const textureLoader = @import("utils/textureLoader.zig");
 const UI = @import("ui/ui.zig").UI;
+const TileMap = @import("tilemap/tilemap.zig").Tilemap;
 const gameConst = @import("utils/constants/gameConstants.zig");
 
 // game state handlers
@@ -33,6 +34,7 @@ pub const Game = struct {
     pause_menu_state: PauseMenuState,
     game_over_state: GameOverState,
     ui: UI,
+    tilemap: ?TileMap,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
@@ -47,6 +49,13 @@ pub const Game = struct {
         const enemy_manager = EnemyManager.init(allocator);
         const ui = UI.init(allocator);
 
+        // load tilemap
+        const tilemap = TileMap.init(allocator) catch |err| blk: {
+            std.debug.print("Failed to load tilemap: {}, continuing without tilemap\n", .{err});
+            break :blk null;
+        };
+
+
         return Game{
             .player = player,
             .textures = textures,
@@ -60,6 +69,7 @@ pub const Game = struct {
             .pause_menu_state = PauseMenuState.init(),
             .game_over_state = GameOverState.init(),
             .ui = ui,
+            .tilemap = tilemap,
             .allocator = allocator,
         };
     }
@@ -69,6 +79,12 @@ pub const Game = struct {
         self.projectile_manager.deinit();
         self.enemy_manager.deinit();
         self.ui.deinit();
+
+        // clean up tilemap
+        if (self.tilemap) |*tm| {
+            tm.deinit();
+        }
+
         rl.CloseWindow();
     }
 
@@ -110,6 +126,7 @@ pub const Game = struct {
                     &self.enemy_manager,
                     input,
                     delta_time,
+                    if (self.tilemap) |*tm| tm else null,
                 );
                 if (next_state) |state| {
                     self.transitionToState(state);
@@ -178,6 +195,11 @@ pub const Game = struct {
     fn drawGameplay(self: *Game) void {
         rl.ClearBackground(rl.SKYBLUE);
         rl.ShowCursor();
+
+        // draw tilemap first (background layer)
+        if (self.tilemap) |*tm| {
+            tm.draw();
+        }
 
         // draw game objects
         self.player.draw(self.textures.player);

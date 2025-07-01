@@ -31,8 +31,9 @@ pub const DEFAULT_PLAYER_SPEED = 200.0;
 pub const DEFAULT_PLAYER_FIRE_SPEED = 300.0;
 pub const DEFAULT_PLAYER_FIRE_RATE = 1.5; // shots per second
 pub const DEFAULT_PLAYER_MAX_HEALTH = 3;
-pub const DEFAULT_PLAYER_DAMAGE_COOLDOWN = 1.0; // seconds
+pub const DEFAULT_PLAYER_DAMAGE_COOLDOWN = 2.5; // seconds
 pub const DEFAULT_PLAYER_KNOCKBACK_FRICTION = 8.0;
+pub const PLAYER_COLLISION_MARGIN: f32 = 6.0;                  
 
 pub const DEFAULT_PROJECTILE_SPEED = 300.0;
 pub const DEFAULT_PROJECTILE_LIFETIME = 3.0; // seconds
@@ -44,13 +45,13 @@ pub const DEFAULT_ENEMY_SPAWN_OFFSET = 50; // pixels outside screen
 
 // Enemy type constants
 pub const SMALL_ENEMY_HEALTH = 2;
-pub const SMALL_ENEMY_SPEED = 220.0;
-pub const SMALL_ENEMY_SCALE = 1.3;
+pub const SMALL_ENEMY_SPEED = 200.0;
+pub const SMALL_ENEMY_SCALE = 1.0;
 pub const SMALL_ENEMY_SCORE: u32 = 10;
 
 pub const MEDIUM_ENEMY_HEALTH = 3;
 pub const MEDIUM_ENEMY_SPEED = 80.0;
-pub const MEDIUM_ENEMY_SCALE = 1.0;
+pub const MEDIUM_ENEMY_SCALE = 1.2;
 pub const MEDIUM_ENEMY_SCORE: u32 = 25;
 
 pub const LARGE_ENEMY_HEALTH = 5;
@@ -66,7 +67,7 @@ pub const BOSS_ENEMY_SCORE: u32 = 200;
 // Combat constants
 pub const DEFAULT_ENEMY_DAMAGE = 1;
 pub const DEFAULT_KNOCKBACK_STRENGTH = 2000.0;
-pub const HIT_FLASH_DURATION = 0.2; // seconds
+pub const HIT_FLASH_DURATION = 0.2;          // seconds
 
 // Animation timing constants
 pub const PLAYER_ANIMATION_SPEED = 0.15; // seconds per frame
@@ -92,7 +93,12 @@ pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
 pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
 
 // Rounds values
-pub const DEFAULT_ROUND_DURATION = 20.0; // each round is 30 seconds
-pub const DEFAULT_BREAK_DURATION = 10.0;  // 5 second break between rounds
-pub const BASE_SPAWN_RATE = 2.0;         // spawns every 2 second
-pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 seconds
+pub const DEFAULT_ROUND_DURATION = 20.0;  // each round is 30 seconds
+pub const DEFAULT_BREAK_DURATION = 10.0;  // 10 second break between rounds
+pub const BASE_SPAWN_RATE = 2.0;          // spawns every 2 second
+pub const MIN_SPAWN_RATE = 0.3;           // spawn rate can't go below 0.3 seconds
+
+// Tilemap constants
+pub const TILE_SIZE: f32 = 16.0;
+pub const MAP_WIDTH_TILES: u32 = WINDOW_WIDTH / TILE_SIZE;
+pub const MAP_HEIGHT_TILES: u32 = WINDOW_HEIGHT / TILE_SIZE; 
