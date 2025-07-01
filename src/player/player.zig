@@ -145,14 +145,26 @@ pub const Player = struct {
             self.position.x + gameConstants.PLAYER_SPRITE_SIZE / 2,
             self.position.y + gameConstants.PLAYER_SPRITE_SIZE / 2
         );
-    
+
         // Calculate movement with tile modifier
         const modified_speed = self.speed * current_modifier;
         const move_x = movement.x * modified_speed * delta_time;
         const move_y = movement.y * modified_speed * delta_time;
 
-        // Try horizontal movement first
+        // Try diagonal movement first (feels more natural)
         var new_position = rl.Vector2{
+            .x = self.position.x + move_x,
+            .y = self.position.y + move_y,
+        };
+    
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position = new_position;
+            self.position = clampToScreen(self.position, gameConstants.PLAYER_SPRITE_SIZE);
+            return;
+        }
+
+        // If diagonal failed, try horizontal movement
+        new_position = rl.Vector2{
             .x = self.position.x + move_x,
             .y = self.position.y,
         };
@@ -193,17 +205,32 @@ pub const Player = struct {
     fn isPositionValid(self: *const Player, position: rl.Vector2, tilemap: *const Tilemap) bool {
         _ = self;
         const sprite_size = gameConstants.PLAYER_SPRITE_SIZE;
+        const margin = gameConstants.PLAYER_COLLISION_MARGIN;
     
-        // Check all four corners of the player sprite
-        const corners = [_]rl.Vector2{
-            rl.Vector2{ .x = position.x, .y = position.y },
-            rl.Vector2{ .x = position.x + sprite_size, .y = position.y },
-            rl.Vector2{ .x = position.x, .y = position.y + sprite_size },
-            rl.Vector2{ .x = position.x + sprite_size, .y = position.y + sprite_size },
+        // smaller collision box by adding margin to all sides
+        const collision_box = rl.Rectangle{
+            .x = position.x + margin,
+            .y = position.y + margin,
+            .width = sprite_size - (margin * 2),
+            .height = sprite_size - (margin * 2),
+        };
+
+        const check_points = [_]rl.Vector2{
+            // Four corners of the smaller collision box
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y },                                                    // Top-left
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y },                              // Top-right
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y + collision_box.height },                             // Bottom-left
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y + collision_box.height },       // Bottom-right
+        
+            // Center points on each edge for better detection
+            rl.Vector2{ .x = collision_box.x + collision_box.width / 2, .y = collision_box.y },                         // Top-center
+            rl.Vector2{ .x = collision_box.x + collision_box.width / 2, .y = collision_box.y + collision_box.height },  // Bottom-center
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y + collision_box.height / 2 },        // Left-center
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y + collision_box.height / 2 },  // Right-center
         };
     
-        for (corners) |corner| {
-            if (tilemap.isPositionSolid(corner.x, corner.y)) {
+        for (check_points) |point| {
+            if (tilemap.isPositionSolid(point.x, point.y)) {
                 return false;
             }
         }
@@ -240,13 +267,12 @@ pub const Player = struct {
     }
 
     pub fn getBounds(self: *const Player) rl.Rectangle {
-        //TODO: move this to a file holding consts
-        const player_sprite_size = 32.0;
+        const margin = gameConstants.PLAYER_COLLISION_MARGIN;
         return rl.Rectangle{
-            .x = self.position.x,
-            .y = self.position.y,
-            .width = player_sprite_size,
-            .height = player_sprite_size,
+            .x = self.position.x + margin,
+            .y = self.position.y + margin,
+            .width = gameConstants.PLAYER_SPRITE_SIZE - (margin * 2),
+            .height = gameConstants.PLAYER_SPRITE_SIZE - (margin * 2),
         };
     }
 

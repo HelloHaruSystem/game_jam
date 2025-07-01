@@ -33,6 +33,7 @@ pub const DEFAULT_PLAYER_FIRE_RATE = 1.5; // shots per second
 pub const DEFAULT_PLAYER_MAX_HEALTH = 3;
 pub const DEFAULT_PLAYER_DAMAGE_COOLDOWN = 2.5; // seconds
 pub const DEFAULT_PLAYER_KNOCKBACK_FRICTION = 8.0;
+pub const PLAYER_COLLISION_MARGIN: f32 = 6.0;                  
 
 pub const DEFAULT_PROJECTILE_SPEED = 300.0;
 pub const DEFAULT_PROJECTILE_LIFETIME = 3.0; // seconds
