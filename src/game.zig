@@ -26,7 +26,7 @@ pub const Game = struct {
     textures: GameTextures,
     aim_circle: AimCircle,
     projectile_manager: ProjectileManager,
-    enemy_manager:EnemyManager,
+    enemy_manager: EnemyManager,
     current_state: GameState,
     start_menu_state: StartMenuState,
     controls_menu_state: ControlsMenuState,
@@ -35,6 +35,7 @@ pub const Game = struct {
     game_over_state: GameOverState,
     ui: UI,
     tilemap: ?TileMap,
+    input_delay_timer: f32,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !Game {
@@ -55,7 +56,6 @@ pub const Game = struct {
             break :blk null;
         };
 
-
         return Game{
             .player = player,
             .textures = textures,
@@ -70,6 +70,7 @@ pub const Game = struct {
             .game_over_state = GameOverState.init(),
             .ui = ui,
             .tilemap = tilemap,
+            .input_delay_timer = 0.0,
             .allocator = allocator,
         };
     }
@@ -99,22 +100,39 @@ pub const Game = struct {
         const input = Input.update();
         const delta_time = rl.GetFrameTime();
 
+        // update input delay timer
+        if (self.input_delay_timer > 0) {
+            self.input_delay_timer -= delta_time;
+        }
+
+        // create a filtered input that ignores input during delay
+        const filtered_input = if (self.input_delay_timer > 0)
+            Input{
+                .move_up = false,
+                .move_down = false,
+                .move_left = false,
+                .move_right = false,
+                .shoot = false,
+            }
+        else
+            input;
+
         // TODO: do functions for each case
         switch (self.current_state) {
             .start_menu => {
-                const next_state = self.start_menu_state.update(input);
+                const next_state = self.start_menu_state.update(filtered_input);
                 if (next_state) |state| {
                     self.transitionToState(state);
                 }
             },
             .controls => {
-                const next_state = self.controls_menu_state.update(input);
+                const next_state = self.controls_menu_state.update(filtered_input);
                 if (next_state) |state| {
                     self.transitionToState(state);
                 }
             },
             .pause_menu => {
-                const next_state = self.pause_menu_state.update(input);
+                const next_state = self.pause_menu_state.update(filtered_input);
                 if (next_state) |state| {
                     self.transitionToState(state);
                 }
@@ -124,7 +142,7 @@ pub const Game = struct {
                     &self.player,
                     &self.projectile_manager,
                     &self.enemy_manager,
-                    input,
+                    filtered_input,
                     delta_time,
                     if (self.tilemap) |*tm| tm else null,
                 );
@@ -140,7 +158,7 @@ pub const Game = struct {
             },
             .game_over => {
                 rl.ShowCursor();
-                const next_state = self.game_over_state.update(input);
+                const next_state = self.game_over_state.update(filtered_input);
                 if (next_state) |state| {
                     self.transitionToState(state);
                 }
@@ -188,7 +206,7 @@ pub const Game = struct {
             },
             .quit => {
                 // Don't draw anything when quitting
-            }
+            },
         }
     }
 
@@ -214,6 +232,11 @@ pub const Game = struct {
     }
 
     fn transitionToState(self: *Game, new_state: GameState) void {
+        // start input delay when transitioning states
+        if (new_state == .playing) {
+            self.input_delay_timer = gameConst.INPUT_DELAY_TIMER;
+        }
+
         switch (new_state) {
             .playing => {
                 if (self.current_state == .game_over) {
@@ -221,7 +244,7 @@ pub const Game = struct {
                 } else if (self.current_state == .start_menu) {
                     self.resetGame();
                 } else if (self.current_state == .pause_menu) {
-                     // Just resume - don't reset the game
+                    // Just resume - don't reset the game
                 }
             },
             .game_over => {
