@@ -6,6 +6,7 @@ const rl = @cImport({
 const enemy = @import("enemy.zig");
 const Player = @import("../player/player.zig").Player;
 const RoundManager = @import("../utils/roundManager.zig").RoundManager;
+const TileMap = @import("../tilemap/tilemap.zig").Tilemap;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyManager = struct {
@@ -29,10 +30,10 @@ pub const EnemyManager = struct {
     }
 
     pub fn spawnAEdge(self: *EnemyManager, enemy_type: enemy.EnemyType) !void {
-        var prng = std.Random.DefaultPrng.init(@intCast(std.time.timestamp()));    // use timestamp to get a random number
+        var prng = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())); // use timestamp to get a random number
         const random = prng.random();
 
-        const edge = random.intRangeAtMost(u8, 0, 3);                 // 0 = top, 1 = right, 2 = bottom, 3 = left
+        const edge = random.intRangeAtMost(u8, 0, 3); // 0 = top, 1 = right, 2 = bottom, 3 = left
         const position = switch (edge) {
             0 => rl.Vector2{ // top
                 .x = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH)),
@@ -47,10 +48,13 @@ pub const EnemyManager = struct {
                 .y = @floatFromInt(gameConstants.WINDOW_HEIGHT + 50),
             },
             3 => rl.Vector2{ // left
-                .x = - 50,
+                .x = -50,
                 .y = random.float(f32) * @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT)),
             },
-            else => rl.Vector2{ .x = 0, .y = 0, },
+            else => rl.Vector2{
+                .x = 0,
+                .y = 0,
+            },
         };
 
         try self.spawn(position, enemy_type);
@@ -71,7 +75,7 @@ pub const EnemyManager = struct {
                     .x = e.position.x + 16, // 16 for center of the 32x32 sprite
                     .y = e.position.y + 16,
                 };
-                
+
                 //TODO: make some enemies deal less or more damage
                 player.takeDamage(1, enemy_center);
                 break; // only one enemy can hit per frame
@@ -79,9 +83,9 @@ pub const EnemyManager = struct {
         }
     }
 
-    pub fn updateWithRoundSystem(self: *EnemyManager, Player_position: rl.Vector2, delta_time: f32, round_manager: *RoundManager) void {
+    pub fn updateWithRoundSystem(self: *EnemyManager, Player_position: rl.Vector2, delta_time: f32, round_manager: *RoundManager, tilemap: ?*const TileMap) void {
         // update existing enemies
-        self.updateExistingEnemies(Player_position, delta_time);
+        self.updateExistingEnemies(Player_position, delta_time, tilemap);
 
         // spawn new enemies based on round system
         if (round_manager.shouldSpawnEnemy()) {
@@ -92,10 +96,11 @@ pub const EnemyManager = struct {
         }
     }
 
-    pub fn updateExistingEnemies(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
+    // Deprecated
+    pub fn updateExistingEnemies(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const TileMap) void {
         // update all enemies
         for (self.enemies.items) |*e| {
-            e.update(player_position, delta_time);
+            e.updateWithTilemap(player_position, delta_time, tilemap);
         }
 
         // remove dead enemies
@@ -111,7 +116,7 @@ pub const EnemyManager = struct {
 
     // deprecated
     pub fn update(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
-       self.updateExistingEnemies(player_position, delta_time);
+        self.updateExistingEnemies(player_position, delta_time);
     }
 
     pub fn draw(self: *const EnemyManager, texture: rl.Texture2D) void {

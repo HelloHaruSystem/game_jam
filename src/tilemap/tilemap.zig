@@ -6,7 +6,6 @@ const rl = @cImport({
 const paths = @import("../utils/paths.zig");
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
-
 pub const TileType = enum(u8) {
     grass = 1,
     water = 2,
@@ -18,9 +17,9 @@ pub const TileType = enum(u8) {
 
     pub fn getMovementModifier(self: TileType) f32 {
         return switch (self) {
-            .grass => 1.0,          // normal speed
-            .water => 0.6,          // slower speed
-            .solid => 0.0,          // no speed because solid
+            .grass => 1.0, // normal speed
+            .water => 0.6, // slower speed
+            .solid => 0.0, // no speed because solid
         };
     }
 };
@@ -60,10 +59,10 @@ pub const Tilemap = struct {
         };
 
         try tilemap.parseCsv(csv_content);
-        
+
         std.debug.print("Loaded tilemap: {}x{} tiles ({}x{} pixels)\n", .{
-            tilemap.map_width, tilemap.map_height,
-            tilemap.map_width * 16, tilemap.map_height * 16, 
+            tilemap.map_width,      tilemap.map_height,
+            tilemap.map_width * 16, tilemap.map_height * 16,
         });
 
         return tilemap;
@@ -132,7 +131,7 @@ pub const Tilemap = struct {
         if (world_x < 0 or world_y < 0) {
             return null;
         }
-        
+
         const tile_x = @as(u32, @intFromFloat(world_x / gameConstants.TILE_SIZE));
         const tile_y = @as(u32, @intFromFloat(world_y / gameConstants.TILE_SIZE));
 
@@ -163,6 +162,31 @@ pub const Tilemap = struct {
         return 1.0; // Default speed
     }
 
+    // For enemies - allows spawning off-screen
+    pub fn isPositionSolidForEnemies(self: *const Tilemap, world_x: f32, world_y: f32) bool {
+        // Much larger spawn zones
+        const spawn_zone_margin = 300.0; // Increased from 100 to 300 pixels
+        const screen_width = @as(f32, @floatFromInt(gameConstants.WINDOW_WIDTH));
+        const screen_height = @as(f32, @floatFromInt(gameConstants.WINDOW_HEIGHT));
+
+        const is_in_spawn_zone = (world_x < -spawn_zone_margin or
+            world_x > screen_width + spawn_zone_margin or
+            world_y < -spawn_zone_margin or
+            world_y > screen_height + spawn_zone_margin);
+
+        if (is_in_spawn_zone) {
+            return false; // Allow enemy movement in spawn zones
+        }
+
+        // For areas on or near the screen, check tilemap normally
+        if (self.getTileAt(world_x, world_y)) |tile_type| {
+            return tile_type.isSolid();
+        }
+
+        // Allow movement in the border area between spawn zone and tilemap
+        return false; // Changed from 'true' to 'false' for more permissive movement
+    }
+
     pub fn draw(self: *const Tilemap) void {
         // Draw the map image
         rl.DrawTexture(self.map_texture, 0, 0, rl.WHITE);
@@ -172,7 +196,7 @@ pub const Tilemap = struct {
     pub fn getWorldWidth(self: *const Tilemap) f32 {
         return @as(f32, @floatFromInt(self.map_width)) * gameConstants.TILE_SIZE;
     }
-    
+
     pub fn getWorldHeight(self: *const Tilemap) f32 {
         return @as(f32, @floatFromInt(self.map_height)) * gameConstants.TILE_SIZE;
     }
