@@ -177,6 +177,83 @@ pub const UI = struct {
         );
     }
 
+    pub fn drawStartMenu(self: *UI, selected_option: u32) void {
+        _ = self;
+        rl.ClearBackground(rl.BLACK);
+
+        const center_x = gameConstants.WINDOW_WIDTH / 2;
+        const center_y = gameConstants.WINDOW_HEIGHT / 2;
+
+        // game title
+        const title = "The Duck Massacre";
+        const title_font_size = 90;
+        const title_width = rl.MeasureText(title, title_font_size);
+
+        rl.DrawText(
+            title,
+            center_x - @divTrunc(title_width, 2),
+            center_y - 150,
+            title_font_size,
+            rl.RED,
+        );
+
+        // subtitle
+        const subtitle = "For Tec Game Jam by Halfdan";
+        const subtitle_font_size = 24;
+        const subtitle_width = rl.MeasureText(subtitle, subtitle_font_size);
+
+        rl.DrawText(
+            subtitle,
+            center_x - @divTrunc(subtitle_width, 2),
+            center_y - 70,
+            subtitle_font_size,
+            rl.LIGHTGRAY,
+        );
+
+        // menu options
+        const start_text = "START GAME";
+        const quit_text = "QUIT";
+        const menu_font_size = 36;
+
+        // start game options
+        const start_color = if (selected_option == 0) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const start_width = rl.MeasureText(start_text, menu_font_size);
+
+        rl.DrawText(
+            start_text,
+            center_x - @divTrunc(start_width, 2),
+            center_y + 20,
+            menu_font_size,
+            start_color,
+        );
+
+        // quit option
+        const quit_color = if (selected_option == 1) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const quit_width = rl.MeasureText(quit_text, menu_font_size);
+
+        rl.DrawText(
+            quit_text,
+            center_x - @divTrunc(quit_width, 2),
+            center_y + 80,
+            menu_font_size,
+            quit_color
+        );
+
+
+        // Instructions
+        const instruction_text = "Use ARROW KEYS or WASD to navigate, ENTER or SPACE to select";
+        const instruction_font_size = 20;
+        const instruction_width = rl.MeasureText(instruction_text, instruction_font_size);
+        
+        rl.DrawText(
+            instruction_text,
+            center_x - @divTrunc(instruction_width, 2),
+            center_y + 200,
+            instruction_font_size,
+            rl.DARKGRAY
+        );
+    }
+
     // game over menu
     // TODO: add some of the hardcoded values to the constant module
     pub fn drawGameOverUI(self: *UI, selected_option: u32, final_score: u32, final_round: u32) void {

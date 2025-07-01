@@ -14,6 +14,7 @@ const UI = @import("ui/ui.zig").UI;
 const gameConst = @import("utils/constants/gameConstants.zig");
 
 // game state handlers
+const StartMenuState = @import("gameStates/startMenu.zig").StartMenuState;
 const PlayingState = @import("gameStates/playing.zig").PlayingState;
 const GameOverState = @import("gameStates/gameOver.zig").GameOverState;
 
@@ -24,6 +25,7 @@ pub const Game = struct {
     projectile_manager: ProjectileManager,
     enemy_manager:EnemyManager,
     current_state: GameState,
+    start_menu_state: StartMenuState,
     playing_state: PlayingState,
     game_over_state: GameOverState,
     ui: UI,
@@ -46,7 +48,8 @@ pub const Game = struct {
             .aim_circle = aim_circle,
             .projectile_manager = projectile_manager,
             .enemy_manager = enemy_manager,
-            .current_state = GameState.playing, // TODO: when menu is added start at the start menu
+            .current_state = GameState.start_menu, // TODO: when menu is added start at the start menu
+            .start_menu_state = StartMenuState.init(),
             .playing_state = PlayingState.init(),
             .game_over_state = GameOverState.init(),
             .ui = ui,
@@ -76,7 +79,10 @@ pub const Game = struct {
         // TODO: do functions for each case
         switch (self.current_state) {
             .start_menu => {
-                rl.ShowCursor();
+                const next_state = self.start_menu_state.update(input);
+                if (next_state) |state| {
+                    self.transitionToState(state);
+                }
             },
             .pause_menu => {
                 rl.ShowCursor();
@@ -116,7 +122,7 @@ pub const Game = struct {
 
         switch (self.current_state) {
             .start_menu => {
-                rl.ClearBackground(rl.SKYBLUE);
+                self.ui.drawStartMenu(self.start_menu_state.selected_option);
             },
             .pause_menu => {
                 rl.ClearBackground(rl.SKYBLUE);
@@ -160,6 +166,8 @@ pub const Game = struct {
         switch (new_state) {
             .playing => {
                 if (self.current_state == .game_over) {
+                    self.resetGame();
+                } else if (self.current_state == .start_menu) {
                     self.resetGame();
                 }
             },

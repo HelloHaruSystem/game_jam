@@ -58,7 +58,8 @@ pub const GameOverState = struct {
                     return GameState.start_menu;
                 },
                 .quit => {
-                    // TODO: proper quit 
+                    // For now just close the window
+                    rl.CloseWindow();
                 },
             }
         }
