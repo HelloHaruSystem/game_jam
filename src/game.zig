@@ -194,8 +194,27 @@ pub const Game = struct {
             };
 
             // smooth camera following???
-            self.camera.target.x += (player_center.x - self.camera.target.x) * gameConst.CAMERA_SPEED;
-            self.camera.target.y += (player_center.y - self.camera.target.y) * gameConst.CAMERA_SPEED;
+            // Calculate desired camera target
+            var desired_target = rl.Vector2{
+                .x = self.camera.target.x + (player_center.x - self.camera.target.x) * gameConst.CAMERA_SPEED,
+                .y = self.camera.target.y + (player_center.y - self.camera.target.y) * gameConst.CAMERA_SPEED,
+            };
+
+            // calculate camera bounds based on zoom level
+            const camera_half_width = (@as(f32, @floatFromInt(gameConst.WINDOW_WIDTH)) / 2) / self.camera.zoom;
+            const camera_half_height = (@as(f32, @floatFromInt(gameConst.WINDOW_HEIGHT)) / 2) / self.camera.zoom;
+
+            // Clamp camera target to stay within map bounds
+            desired_target.x = std.math.clamp(desired_target.x, camera_half_width, // Left bound
+                gameConst.MAP_WORLD_WIDTH - camera_half_width // Right bound
+            );
+
+            desired_target.y = std.math.clamp(desired_target.y, camera_half_height, // Top bound
+                gameConst.MAP_WORLD_HEIGHT - camera_half_height // Bottom bound
+            );
+
+            // Apply the clamped target
+            self.camera.target = desired_target;
         }
     }
 

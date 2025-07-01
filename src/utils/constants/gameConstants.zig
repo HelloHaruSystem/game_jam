@@ -13,6 +13,10 @@ pub const CAMERA_ROTATION = 0.0;
 pub const CAMERA_ZOOM = 1.2; // 20% zoom
 pub const CAMERA_SPEED = 0.05; // low for smoother, higher for responsive
 
+// world bounds
+pub const MAP_WORLD_WIDTH: f32 = @as(f32, @floatFromInt(WINDOW_WIDTH));
+pub const MAP_WORLD_HEIGHT: f32 = @as(f32, @floatFromInt(WINDOW_HEIGHT));
+
 // sprite constants
 pub const PLAYER_SPRITE_SIZE = 32;
 pub const PLAYER_SPRITE_HALF_SIZE = PLAYER_SPRITE_SIZE / 2;
