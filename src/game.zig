@@ -161,6 +161,7 @@ pub const Game = struct {
                     filtered_input,
                     delta_time,
                     if (self.tilemap) |*tm| tm else null,
+                    &self.camera,
                 );
                 if (next_state) |state| {
                     self.transitionToState(state);
@@ -252,7 +253,7 @@ pub const Game = struct {
 
         // draw game objects
         self.player.draw(self.textures.player);
-        self.aim_circle.draw(self.player.position);
+        self.aim_circle.draw(self.player.position, &self.camera);
         self.projectile_manager.draw(self.textures.projectile);
         self.enemy_manager.draw(self.textures.enemy);
 

@@ -29,6 +29,7 @@ pub const PlayingState = struct {
         input: Input,
         delta_time: f32,
         tilemap: ?*const TileMap,
+        camera: *const rl.Camera2D,
     ) ?GameState {
 
         // update round system
@@ -63,11 +64,13 @@ pub const PlayingState = struct {
 
         // check if projectile should spawn during animation (separate from input)
         if (player.animation.shouldSpawnProjectile()) {
-            const mouse_position = rl.GetMousePosition();
+            const mouse_screen_position = rl.GetMousePosition();
+            // convert mouse position from screen space to world space
+            const mouse_world_position = rl.GetScreenToWorld2D(mouse_screen_position, camera.*);
             const player_center = self.getPlayerCenter(player);
 
             // spawn the projectile
-            projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
+            projectile_manager.spawn(player_center, mouse_world_position, player.fire_speed) catch |err| {
                 std.debug.print("Failed to spawn projectile: {}\n", .{err});
             };
         }
