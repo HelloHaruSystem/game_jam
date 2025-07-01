@@ -65,18 +65,18 @@ pub const SMALL_ENEMY_SCALE = 1.0;
 pub const SMALL_ENEMY_SCORE: u32 = 10;
 
 pub const MEDIUM_ENEMY_HEALTH = 3;
-pub const MEDIUM_ENEMY_SPEED = 80.0;
-pub const MEDIUM_ENEMY_SCALE = 1.2;
+pub const MEDIUM_ENEMY_SPEED = 120.0;
+pub const MEDIUM_ENEMY_SCALE = 1.4;
 pub const MEDIUM_ENEMY_SCORE: u32 = 25;
 
 pub const LARGE_ENEMY_HEALTH = 5;
 pub const LARGE_ENEMY_SPEED = 50.0;
-pub const LARGE_ENEMY_SCALE = 1.5;
+pub const LARGE_ENEMY_SCALE = 1.8;
 pub const LARGE_ENEMY_SCORE: u32 = 50;
 
 pub const BOSS_ENEMY_HEALTH = 20;
 pub const BOSS_ENEMY_SPEED = 30.0;
-pub const BOSS_ENEMY_SCALE = 2.0;
+pub const BOSS_ENEMY_SCALE = 2.2;
 pub const BOSS_ENEMY_SCORE: u32 = 200;
 
 // Combat constants
@@ -108,7 +108,7 @@ pub const PROJECTILE_SPRITE_SHEET = "projectile_spritesheet.png";
 pub const ENEMY_SPRITE_SHEET = "enemy_spritesheet.png";
 
 // Rounds values
-pub const DEFAULT_ROUND_DURATION = 20.0; // each round is 30 seconds
+pub const DEFAULT_ROUND_DURATION = 25.0; // each round is 30 seconds
 pub const DEFAULT_BREAK_DURATION = 10.0; // 10 second break between rounds
 pub const BASE_SPAWN_RATE = 2.0; // spawns every 2 second
 pub const MIN_SPAWN_RATE = 0.3; // spawn rate can't go below 0.3 seconds
