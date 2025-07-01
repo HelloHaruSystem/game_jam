@@ -44,13 +44,13 @@ pub const DEFAULT_ENEMY_SPAWN_OFFSET = 50; // pixels outside screen
 
 // Enemy type constants
 pub const SMALL_ENEMY_HEALTH = 2;
-pub const SMALL_ENEMY_SPEED = 220.0;
-pub const SMALL_ENEMY_SCALE = 1.3;
+pub const SMALL_ENEMY_SPEED = 200.0;
+pub const SMALL_ENEMY_SCALE = 1.0;
 pub const SMALL_ENEMY_SCORE: u32 = 10;
 
 pub const MEDIUM_ENEMY_HEALTH = 3;
 pub const MEDIUM_ENEMY_SPEED = 80.0;
-pub const MEDIUM_ENEMY_SCALE = 1.0;
+pub const MEDIUM_ENEMY_SCALE = 1.2;
 pub const MEDIUM_ENEMY_SCORE: u32 = 25;
 
 pub const LARGE_ENEMY_HEALTH = 5;
