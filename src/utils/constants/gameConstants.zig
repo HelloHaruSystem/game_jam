@@ -34,7 +34,8 @@ pub const PROJECTILE_FRAME_COUNT = 5;
 pub const PLAYER_IDLE_ROW = 4;
 pub const PLAYER_WALK_ROW = 3;
 pub const PLAYER_ATTACK_ROW = 8;
-pub const ENEMY_WALK_ROW = 3;
+pub const ENEMY_WALK_ROW_YELLOW = 3;
+pub const ENEMY_WALK_ROW_GREEN = 2;
 pub const PROJECTILE_ROW = 16;
 
 // game balance constants
