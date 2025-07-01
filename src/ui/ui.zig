@@ -212,6 +212,7 @@ pub const UI = struct {
 
         // menu options
         const start_text = "START GAME";
+        const controls_text = "CONTROLS";
         const quit_text = "QUIT";
         const menu_font_size = 36;
 
@@ -227,14 +228,26 @@ pub const UI = struct {
             start_color,
         );
 
+        // controls option
+        const controls_color = if (selected_option == 1) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const controls_width = rl.MeasureText(controls_text, menu_font_size);
+
+        rl.DrawText(
+            controls_text,
+            center_x - @divTrunc(controls_width, 2),
+            center_y + 80,
+            menu_font_size,
+            controls_color,
+        );
+
         // quit option
-        const quit_color = if (selected_option == 1) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const quit_color = if (selected_option == 2) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
         const quit_width = rl.MeasureText(quit_text, menu_font_size);
 
         rl.DrawText(
             quit_text,
             center_x - @divTrunc(quit_width, 2),
-            center_y + 80,
+            center_y + 140,
             menu_font_size,
             quit_color
         );
@@ -248,14 +261,185 @@ pub const UI = struct {
         rl.DrawText(
             instruction_text,
             center_x - @divTrunc(instruction_width, 2),
-            center_y + 200,
+            center_y + 220,
             instruction_font_size,
             rl.DARKGRAY
         );
     }
 
+    pub fn drawControlsMenu(self: *UI) void {
+        _ = self;
+        rl.ClearBackground(rl.BLACK);
+
+        const center_x = gameConstants.WINDOW_WIDTH / 2;
+        const center_y = gameConstants.WINDOW_HEIGHT / 2;
+
+        // Title
+        const title = "CONTROLS";
+        const title_font_size = 60;
+        const title_width = rl.MeasureText(title, title_font_size);
+        
+        rl.DrawText(
+            title,
+            center_x - @divTrunc(title_width, 2),
+            center_y - 200,
+            title_font_size,
+            rl.YELLOW
+        );
+
+        // Controls explanation
+        const control1 = "MOVE: WASD or Arrow Keys";
+        const control2 = "AIM: Mouse";
+        const control3 = "SHOOT: Space Bar";
+        const control4 = "PAUSE: Escape Key";
+
+        const control_font_size = 32;
+
+        // Draw each control individually
+        var text_width = rl.MeasureText(control1, control_font_size);
+        rl.DrawText(
+            control1,
+            center_x - @divTrunc(text_width, 2),
+            center_y - 80,
+            control_font_size,
+            gameConstants.UI_TEXT_COLOR
+        );
+
+        text_width = rl.MeasureText(control2, control_font_size);
+        rl.DrawText(
+            control2,
+            center_x - @divTrunc(text_width, 2),
+            center_y - 20,
+            control_font_size,
+            gameConstants.UI_TEXT_COLOR
+        );
+
+        text_width = rl.MeasureText(control3, control_font_size);
+        rl.DrawText(
+            control3,
+            center_x - @divTrunc(text_width, 2),
+            center_y + 40,
+            control_font_size,
+            gameConstants.UI_TEXT_COLOR
+        );
+
+        text_width = rl.MeasureText(control4, control_font_size);
+        rl.DrawText(
+            control4,
+            center_x - @divTrunc(text_width, 2),
+            center_y + 100,
+            control_font_size,
+            gameConstants.UI_TEXT_COLOR
+        );
+
+        // game explained
+        const info_text = "Survive waves of enemies and get the highest score!";
+        const info_font_size = 24;
+        const info_width = rl.MeasureText(info_text, info_font_size);
+        
+        rl.DrawText(
+            info_text,
+            center_x - @divTrunc(info_width, 2),
+            center_y + 160,
+            info_font_size,
+            rl.LIGHTGRAY
+        );
+
+        // how to go back
+        const back_text = "Press ESCAPE, ENTER, or SPACE to go back";
+        const back_font_size = 20;
+        const back_width = rl.MeasureText(back_text, back_font_size);
+        
+        rl.DrawText(
+            back_text,
+            center_x - @divTrunc(back_width, 2),
+            center_y + 220,
+            back_font_size,
+            rl.DARKGRAY
+        );
+    }
+
+    pub fn drawPauseMenu(self: *UI, selected_option: u32) void {
+        _ = self;
+
+        // draw the somewhat transparent overlay for the NICE pause effect :)
+        rl.DrawRectangle(0, 0, gameConstants.WINDOW_WIDTH, gameConstants.WINDOW_HEIGHT,
+            rl.Color{ .r = 0, .g = 0, .b = 0, .a = 150, }); // transparent black overlay
+        
+        const center_x = gameConstants.WINDOW_WIDTH / 2;
+        const center_y = gameConstants.WINDOW_HEIGHT / 2;
+
+        // Pause title
+        const title = "GAME PAUSED";
+        const title_font_size = 60;
+        const title_width = rl.MeasureText(title, title_font_size);
+        
+        rl.DrawText(
+            title,
+            center_x - @divTrunc(title_width, 2),
+            center_y - 120,
+            title_font_size,
+            rl.YELLOW
+        );
+
+        // Menu options
+        const resume_text = "RESUME";
+        const menu_text = "MAIN MENU";
+        const quit_text = "QUIT";
+        const menu_font_size = 36;
+
+        // Resume option
+        const resume_color = if (selected_option == 0) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const resume_width = rl.MeasureText(resume_text, menu_font_size);
+
+        rl.DrawText(
+            resume_text,
+            center_x - @divTrunc(resume_width, 2),
+            center_y - 20,
+            menu_font_size,
+            resume_color
+        );
+
+        // Main Menu option
+        const menu_color = if (selected_option == 1) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const menu_width = rl.MeasureText(menu_text, menu_font_size);
+
+        rl.DrawText(
+            menu_text,
+            center_x - @divTrunc(menu_width, 2),
+            center_y + 40,
+            menu_font_size,
+            menu_color
+        );
+
+        // Quit option
+        const quit_color = if (selected_option == 2) rl.YELLOW else gameConstants.UI_TEXT_COLOR;
+        const quit_width = rl.MeasureText(quit_text, menu_font_size);
+
+        rl.DrawText(
+            quit_text,
+            center_x - @divTrunc(quit_width, 2),
+            center_y + 100,
+            menu_font_size,
+            quit_color
+        );
+
+        // Instructions
+        const instruction_text = "Use ARROW KEYS or WASD to navigate, ENTER/SPACE to select, ESC to resume";
+        const instruction_font_size = 20;
+        const instruction_width = rl.MeasureText(instruction_text, instruction_font_size);
+        
+        rl.DrawText(
+            instruction_text,
+            center_x - @divTrunc(instruction_width, 2),
+            center_y + 180,
+            instruction_font_size,
+            rl.LIGHTGRAY
+        );
+
+    }
+
     // game over menu
-    // TODO: add some of the hardcoded values to the constant module
     pub fn drawGameOverUI(self: *UI, selected_option: u32, final_score: u32, final_round: u32) void {
         rl.ClearBackground(rl.RED);
 

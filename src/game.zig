@@ -15,7 +15,9 @@ const gameConst = @import("utils/constants/gameConstants.zig");
 
 // game state handlers
 const StartMenuState = @import("gameStates/startMenu.zig").StartMenuState;
+const ControlsMenuState = @import("gameStates/controlsMenu.zig").ControlsMenuState;
 const PlayingState = @import("gameStates/playing.zig").PlayingState;
+const PauseMenuState = @import("gameStates/pauseMenu.zig").PauseMenuState;
 const GameOverState = @import("gameStates/gameOver.zig").GameOverState;
 
 pub const Game = struct {
@@ -26,7 +28,9 @@ pub const Game = struct {
     enemy_manager:EnemyManager,
     current_state: GameState,
     start_menu_state: StartMenuState,
+    controls_menu_state: ControlsMenuState,
     playing_state: PlayingState,
+    pause_menu_state: PauseMenuState,
     game_over_state: GameOverState,
     ui: UI,
     allocator: std.mem.Allocator,
@@ -34,6 +38,7 @@ pub const Game = struct {
     pub fn init(allocator: std.mem.Allocator) !Game {
         rl.InitWindow(gameConst.WINDOW_WIDTH, gameConst.WINDOW_HEIGHT, "Haru Jam");
         rl.SetTargetFPS(60);
+        rl.SetExitKey(rl.KEY_NULL);
 
         const textures = try GameTextures.init(allocator);
         const player = Player.init();
@@ -50,7 +55,9 @@ pub const Game = struct {
             .enemy_manager = enemy_manager,
             .current_state = GameState.start_menu, // TODO: when menu is added start at the start menu
             .start_menu_state = StartMenuState.init(),
+            .controls_menu_state = ControlsMenuState.init(),
             .playing_state = PlayingState.init(),
+            .pause_menu_state = PauseMenuState.init(),
             .game_over_state = GameOverState.init(),
             .ui = ui,
             .allocator = allocator,
@@ -84,8 +91,17 @@ pub const Game = struct {
                     self.transitionToState(state);
                 }
             },
+            .controls => {
+                const next_state = self.controls_menu_state.update(input);
+                if (next_state) |state| {
+                    self.transitionToState(state);
+                }
+            },
             .pause_menu => {
-                rl.ShowCursor();
+                const next_state = self.pause_menu_state.update(input);
+                if (next_state) |state| {
+                    self.transitionToState(state);
+                }
             },
             .playing => {
                 const next_state = self.playing_state.update(
@@ -128,8 +144,14 @@ pub const Game = struct {
             .start_menu => {
                 self.ui.drawStartMenu(self.start_menu_state.selected_option);
             },
+            .controls => {
+                self.ui.drawControlsMenu();
+            },
             .pause_menu => {
-                rl.ClearBackground(rl.SKYBLUE);
+                // first draw the game background (paused state)
+                self.drawGameplay();
+                // then the pause overlay
+                self.ui.drawPauseMenu(self.pause_menu_state.selected_option);
             },
             .playing => {
                 self.drawGameplay();
@@ -176,6 +198,8 @@ pub const Game = struct {
                     self.resetGame();
                 } else if (self.current_state == .start_menu) {
                     self.resetGame();
+                } else if (self.current_state == .pause_menu) {
+                     // Just resume - don't reset the game
                 }
             },
             .game_over => {
