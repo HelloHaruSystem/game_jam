@@ -84,7 +84,7 @@ pub const Enemy = struct {
         };
     }
 
-    pub fn update(self: *Enemy, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const Tilemap) void {
+    pub fn updateWithTilemap(self: *Enemy, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const Tilemap) void {
         if (!self.active) return;
 
         // calculate player center position
@@ -184,7 +184,7 @@ pub const Enemy = struct {
         self.velocity.y = 0;
     }
 
-    fn isPositionValid(self: *const Enemy, position: rl.Vector2, tilemap: *const Tilemap) void {
+    fn isPositionValid(self: *const Enemy, position: rl.Vector2, tilemap: *const Tilemap) bool {
         _ = self;
 
         const sprite_size = gameConstants.ENEMY_SPRITE_SIZE;
@@ -207,7 +207,7 @@ pub const Enemy = struct {
         };
 
         for (check_points) |point| {
-            if (tilemap.isPositionSolid(point.x, point.y)) {
+            if (tilemap.isPositionSolidForEnemies(point.x, point.y)) { // ← Changed this line
                 return false;
             }
         }
@@ -253,5 +253,10 @@ pub const Enemy = struct {
 
     pub fn isDead(self: *const Enemy) bool {
         return !self.active or self.current_health == 0;
+    }
+
+    // Deprecated
+    pub fn update(self: *Enemy, player_position: rl.Vector2, delta_time: f32) void {
+        self.updateWithTilemap(player_position, delta_time, null);
     }
 };

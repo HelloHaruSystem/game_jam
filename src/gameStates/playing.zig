@@ -15,7 +15,7 @@ const GameConstants = @import("../utils/constants/gameConstants.zig");
 pub const PlayingState = struct {
     round_manager: RoundManager,
 
-    pub fn init() PlayingState{
+    pub fn init() PlayingState {
         return PlayingState{
             .round_manager = RoundManager.init(),
         };
@@ -29,58 +29,58 @@ pub const PlayingState = struct {
         input: Input,
         delta_time: f32,
         tilemap: ?*const TileMap,
-        ) ?GameState {
+    ) ?GameState {
 
-            // update round system
-            self.round_manager.update(delta_time);
+        // update round system
+        self.round_manager.update(delta_time);
 
-            // update game entities
-            player.update(input, delta_time, tilemap);
-            projectile_manager.update(delta_time);
+        // update game entities
+        player.update(input, delta_time, tilemap);
+        projectile_manager.update(delta_time);
 
-            // only update enemies and spawn new ones during active rounds
-            if (self.round_manager.isRoundActive()) {
-                enemy_manager.updateWithRoundSystem(player.position, delta_time, &self.round_manager);
-            } else {
-                // during break just update existing enemies (letting them finishing moving/attacking)
-                enemy_manager.updateExistingEnemies(player.position, delta_time);
-            }
+        // only update enemies and spawn new ones during active rounds
+        if (self.round_manager.isRoundActive()) {
+            enemy_manager.updateWithRoundSystem(player.position, delta_time, &self.round_manager, tilemap);
+        } else {
+            // during break just update existing enemies (letting them finishing moving/attacking)
+            enemy_manager.updateExistingEnemies(player.position, delta_time, tilemap);
+        }
 
-            // handle collision
-            projectile_manager.checkCollisionWithEnemies(enemy_manager, &self.round_manager);
-            enemy_manager.checkCollisionWithPlayer(player);
+        // handle collision
+        projectile_manager.checkCollisionWithEnemies(enemy_manager, &self.round_manager);
+        enemy_manager.checkCollisionWithPlayer(player);
 
-            // check for game over
-            if (player.isDead()) {
-                return GameState.game_over;
-            }
+        // check for game over
+        if (player.isDead()) {
+            return GameState.game_over;
+        }
 
-            // handle shooting - start attack animation
-            if (self.shouldPlayerShoot(input, player)) {
-                player.animation.startAttack();
-                player.shoot();
-            }
+        // handle shooting - start attack animation
+        if (self.shouldPlayerShoot(input, player)) {
+            player.animation.startAttack();
+            player.shoot();
+        }
 
-            // check if projectile should spawn during animation (separate from input)
-            if (player.animation.shouldSpawnProjectile()) {
-                const mouse_position = rl.GetMousePosition();
-                const player_center = self.getPlayerCenter(player);
+        // check if projectile should spawn during animation (separate from input)
+        if (player.animation.shouldSpawnProjectile()) {
+            const mouse_position = rl.GetMousePosition();
+            const player_center = self.getPlayerCenter(player);
 
-                // spawn the projectile
-                projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
-                    std.debug.print("Failed to spawn projectile: {}\n", .{err});
-                };
-            }
+            // spawn the projectile
+            projectile_manager.spawn(player_center, mouse_position, player.fire_speed) catch |err| {
+                std.debug.print("Failed to spawn projectile: {}\n", .{err});
+            };
+        }
 
-            // handle pause
-            if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
-                return GameState.pause_menu;
-            }
+        // handle pause
+        if (rl.IsKeyPressed(rl.KEY_ESCAPE)) {
+            return GameState.pause_menu;
+        }
 
-            // TODO: add wave progression logic
-            // TODO: add score tracking
+        // TODO: add wave progression logic
+        // TODO: add score tracking
 
-            return null; // stay in playing state
+        return null; // stay in playing state
     }
 
     pub fn reset(self: *PlayingState) void {

@@ -85,7 +85,7 @@ pub const EnemyManager = struct {
 
     pub fn updateWithRoundSystem(self: *EnemyManager, Player_position: rl.Vector2, delta_time: f32, round_manager: *RoundManager, tilemap: ?*const TileMap) void {
         // update existing enemies
-        self.updateExistingEnemiesWithTilemap(Player_position, delta_time, tilemap);
+        self.updateExistingEnemies(Player_position, delta_time, tilemap);
 
         // spawn new enemies based on round system
         if (round_manager.shouldSpawnEnemy()) {
@@ -96,25 +96,11 @@ pub const EnemyManager = struct {
         }
     }
 
-    pub fn updateExistingEnemiesWithTilemap(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const TileMap) void {
-        for (self.enemies.items) |*e| {
-            e.update(player_position, delta_time, tilemap);
-        }
-
-        var i: usize = 0;
-        while (i < self.enemies.len) {
-            if (self.enemies.items[i].isDead()) {
-                _ = self.enemies.swapRemove(i);
-            } else {
-                i += 1;
-            }
-        }
-    }
-
-    pub fn updateExistingEnemies(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32) void {
+    // Deprecated
+    pub fn updateExistingEnemies(self: *EnemyManager, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const TileMap) void {
         // update all enemies
         for (self.enemies.items) |*e| {
-            e.update(player_position, delta_time);
+            e.updateWithTilemap(player_position, delta_time, tilemap);
         }
 
         // remove dead enemies
