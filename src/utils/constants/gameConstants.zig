@@ -96,3 +96,8 @@ pub const DEFAULT_ROUND_DURATION = 20.0; // each round is 30 seconds
 pub const DEFAULT_BREAK_DURATION = 10.0;  // 5 second break between rounds
 pub const BASE_SPAWN_RATE = 2.0;         // spawns every 2 second
 pub const MIN_SPAWN_RATE = 0.3;          // spawn rate can't go below 0.3 seconds
+
+// Tilemap constants
+pub const TILE_SIZE: f32 = 16.0;
+pub const MAP_WIDTH_TILES: u32 = WINDOW_WIDTH / 2;
+pub const MAP_HEIGHT_TILES: u32 = WINDOW_HEIGHT / 2; 
