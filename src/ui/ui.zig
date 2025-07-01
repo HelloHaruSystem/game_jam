@@ -179,8 +179,7 @@ pub const UI = struct {
 
     // game over menu
     // TODO: add some of the hardcoded values to the constant module
-    pub fn drawGameOverUI(self: *UI, selected_option: u32) void {
-        _ = self;
+    pub fn drawGameOverUI(self: *UI, selected_option: u32, final_score: u32, final_round: u32) void {
         rl.ClearBackground(rl.RED);
 
         const center_x = gameConstants.WINDOW_WIDTH / 2;
@@ -194,8 +193,42 @@ pub const UI = struct {
         rl.DrawText(
             title,
             center_x - @divTrunc(title_width, 2),
-            center_y - 150, title_font_size,
+            center_y - 200,
+            title_font_size,
             gameConstants.UI_TEXT_COLOR
+        );
+
+        // final score and round display
+        const score_text = std.fmt.allocPrint(self.allocator, "Final Score: {d}", .{
+            final_score, 
+        }) catch "Final Score. ?";
+        defer self.allocator.free(score_text);
+        const score_text_c = self.allocator.dupeZ(u8, score_text) catch return;
+        defer self.allocator.free(score_text_c);
+
+        const score_width = rl.MeasureText(score_text_c, 36);
+        rl.DrawText(
+            score_text_c,
+            center_x - @divTrunc(score_width, 2),
+            center_y - 120,
+            36,
+            rl.YELLOW,
+        );
+
+        const round_text = std.fmt.allocPrint(self.allocator, "Reached Round: {d}", .{
+            final_round, 
+        }) catch "Reached Round ?";
+        defer self.allocator.free(round_text);
+        const round_text_c = self.allocator.dupeZ(u8, round_text) catch return;
+        defer self.allocator.free(round_text_c);
+
+        const round_width = rl.MeasureText(round_text_c, 24);
+        rl.DrawText(
+            round_text_c,
+            center_x - @divTrunc(round_width, 2),
+            center_y - 80,
+            24,
+            rl.LIGHTGRAY,
         );
 
         // menu options
@@ -211,7 +244,7 @@ pub const UI = struct {
         rl.DrawText(
             restart_text,
             center_x - @divTrunc(restart_width, 2),
-            center_y - 30,
+            center_y - 10,
             menu_font_size,
             restart_color
         );
@@ -223,7 +256,7 @@ pub const UI = struct {
         rl.DrawText(
             menu_text,
             center_x - @divTrunc(menu_width, 2),
-            center_y + 30,
+            center_y + 50,
             menu_font_size,
             menu_color,
         );
@@ -235,7 +268,7 @@ pub const UI = struct {
         rl.DrawText(
             quit_text,
             center_x - @divTrunc(quit_width, 2),
-            center_y + 90,
+            center_y + 110,
             menu_font_size,
             quit_color,
         );
@@ -247,7 +280,7 @@ pub const UI = struct {
         rl.DrawText(
             instruction_text,
             center_x - @divTrunc(instruction_width, 2),
-            center_y + 180,
+            center_y + 200,
             instruction_font_size,
             rl.LIGHTGRAY,
         );

@@ -5,10 +5,13 @@ const rl = @cImport({
 
 const Input = @import("../player/input.zig").Input;
 const GameState = @import("../utils/gameState.zig").GameState;
+const RoundManager = @import("../utils/roundManager.zig").RoundManager;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const GameOverState = struct {
     selected_option: u32,
+    final_score: u32,
+    final_round: u32,
 
     const GameOverOptions = enum(u32) {
         restart = 0,
@@ -19,7 +22,14 @@ pub const GameOverState = struct {
     pub fn init() GameOverState {
         return GameOverState{
             .selected_option = 0,
+            .final_score = 0,
+            .final_round = 1,
         };
+    }
+
+    pub fn setFinalStats(self: *GameOverState, round_manager: *const RoundManager) void  {
+        self.final_score = round_manager.score;
+        self.final_round = round_manager.current_round;
     }
 
     pub fn update(self: *GameOverState, input: Input) ?GameState {
@@ -56,73 +66,4 @@ pub const GameOverState = struct {
         return null;
     }
 
-    pub fn draw(self: *GameOverState) void {
-        rl.ClearBackground(rl.RED);
-
-        const center_x = gameConstants.WINDOW_WIDTH / 2;
-        const center_y = gameConstants.WINDOW_HEIGHT / 2;
-
-        // game over title
-        const title = "GAME OVER";
-        const title_font_size = 60;
-        const title_width = rl.MeasureText(title, title_font_size);
-        rl.DrawText(
-            title,
-            center_x - @divTrunc(title_width, 2),
-            center_y - 150,
-            title_font_size,
-            rl.WHITE,
-        );
-
-        // Menu options
-        const restart_text = "RESTART";
-        const menu_text = "MAIN MENU";
-        const quit_text = "QUIT";
-        const menu_font_size = 36;
-
-        // Restart option
-        const restart_color = if (self.selected_option == 0) rl.YELLOW else rl.WHITE;
-        const restart_width = rl.MeasureText(restart_text, menu_font_size);
-        rl.DrawText(
-            restart_text,
-            center_x - @divTrunc(restart_width, 2),
-            center_y - 30,
-            menu_font_size,
-            restart_color,
-        );
-
-        // Main menu option
-        const menu_color = if (self.selected_option == 1) rl.YELLOW else rl.WHITE;
-        const menu_width = rl.MeasureText(menu_text, menu_font_size);
-        rl.DrawText(
-            menu_text,
-            center_x - @divTrunc(menu_width, 2),
-            center_y + 30,
-            menu_font_size,
-            menu_color,
-        );
-
-        // Quit option
-        const quit_color = if (self.selected_option == 2) rl.YELLOW else rl.WHITE;
-        const quit_width = rl.MeasureText(quit_text, menu_font_size);
-        rl.DrawText(
-            quit_text,
-            center_x - @divTrunc(quit_width, 2),
-            center_y + 90,
-            menu_font_size,
-            quit_color,
-        );
-
-        // Instructions
-        const instruction_text = "Use ARROW KEYS to navigate, ENTER to select, or press R for quick restart";
-        const instruction_font_size = 20;
-        const instruction_width = rl.MeasureText(instruction_text, instruction_font_size);
-        rl.DrawText(
-            instruction_text,
-            center_x - @divTrunc(instruction_width, 2),
-            center_y + 180,
-            instruction_font_size,
-            rl.LIGHTGRAY,
-        );
-    }
 };

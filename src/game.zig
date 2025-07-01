@@ -131,7 +131,11 @@ pub const Game = struct {
                 rl.ClearBackground(rl.SKYBLUE);
             },
             .game_over => {
-                self.ui.drawGameOverUI(self.game_over_state.selected_option);
+                self.ui.drawGameOverUI(
+                    self.game_over_state.selected_option,
+                    self.game_over_state.final_score,
+                    self.game_over_state.final_round,
+                );
             },
         }
     }
@@ -158,6 +162,9 @@ pub const Game = struct {
                 if (self.current_state == .game_over) {
                     self.resetGame();
                 }
+            },
+            .game_over => {
+                self.game_over_state.setFinalStats(&self.playing_state.round_manager);
             },
             else => {},
         }
