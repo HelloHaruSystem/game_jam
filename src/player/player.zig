@@ -80,32 +80,35 @@ pub const Player = struct {
             }
         }
 
-        // Handle knockback movement (separate from input movement)
+        // Handle knockback movement (separate from input movement) - FIXED VERSION
         if (self.knock_back_velocity.x != 0.0 or self.knock_back_velocity.y != 0.0) {
             const knockback_movement = rl.Vector2{
                 .x = self.knock_back_velocity.x * delta_time,
                 .y = self.knock_back_velocity.y * delta_time,
             };
-        
+
             const new_position = rl.Vector2{
                 .x = self.position.x + knockback_movement.x,
                 .y = self.position.y + knockback_movement.y,
             };
-        
-            // Apply knockback if the new position is valid
+
+            // FIRST clamp to screen bounds to prevent out-of-bounds
+            const clamped_position = clampToScreen(new_position, gameConstants.PLAYER_SPRITE_SIZE);
+
+            // THEN check tilemap collision with the clamped position
             const valid = if (tilemap) |tm| 
-                self.isPositionValid(new_position, tm) 
+                self.isPositionValid(clamped_position, tm) 
             else 
                 true;
             
             if (valid) {
-                self.position = clampToScreen(new_position, gameConstants.PLAYER_SPRITE_SIZE);
+                self.position = clamped_position;
             }
-        
+
             // Apply knockback friction
             self.knock_back_velocity.x *= (1.0 - self.knock_back_friction * delta_time);
             self.knock_back_velocity.y *= (1.0 - self.knock_back_friction * delta_time);
-        
+
             // Stop very small knockbacks
             if (@abs(self.knock_back_velocity.x) < 1.0) {
                 self.knock_back_velocity.x = 0.0;

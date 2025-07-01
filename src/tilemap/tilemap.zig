@@ -128,6 +128,11 @@ pub const Tilemap = struct {
     }
 
     pub fn getTileAt(self: *const Tilemap, world_x: f32, world_y: f32) ?TileType {
+        // Return null for negative coordinates
+        if (world_x < 0 or world_y < 0) {
+            return null;
+        }
+        
         const tile_x = @as(u32, @intFromFloat(world_x / gameConstants.TILE_SIZE));
         const tile_y = @as(u32, @intFromFloat(world_y / gameConstants.TILE_SIZE));
 
