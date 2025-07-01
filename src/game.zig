@@ -35,6 +35,7 @@ pub const Game = struct {
     game_over_state: GameOverState,
     ui: UI,
     tilemap: ?TileMap,
+    camera: rl.Camera2D,
     input_delay_timer: f32,
     allocator: std.mem.Allocator,
 
@@ -56,6 +57,20 @@ pub const Game = struct {
             break :blk null;
         };
 
+        // initialize camera
+        const camera = rl.Camera2D{
+            .target = rl.Vector2{
+                .x = gameConst.CAMERA_START_POS_X,
+                .y = gameConst.CAMERA_START_POS_Y,
+            },
+            .offset = rl.Vector2{
+                .x = gameConst.CAMERA_START_POS_X,
+                .y = gameConst.CAMERA_START_POS_Y,
+            },
+            .rotation = gameConst.CAMERA_ROTATION,
+            .zoom = gameConst.CAMERA_ZOOM,
+        };
+
         return Game{
             .player = player,
             .textures = textures,
@@ -70,6 +85,7 @@ pub const Game = struct {
             .game_over_state = GameOverState.init(),
             .ui = ui,
             .tilemap = tilemap,
+            .camera = camera,
             .input_delay_timer = 0.0,
             .allocator = allocator,
         };
@@ -168,6 +184,18 @@ pub const Game = struct {
                 // The run() function will exit when it sees this state
             },
         }
+
+        // camera following
+        if (self.current_state == .playing) {
+            const player_center = rl.Vector2{
+                .x = self.player.position.x + gameConst.PLAYER_SPRITE_HALF_SIZE,
+                .y = self.player.position.y + gameConst.PLAYER_SPRITE_HALF_SIZE,
+            };
+
+            // smooth camera following???
+            self.camera.target.x += (player_center.x - self.camera.target.x) * gameConst.CAMERA_SPEED;
+            self.camera.target.y += (player_center.y - self.camera.target.y) * gameConst.CAMERA_SPEED;
+        }
     }
 
     // TODO: make a function for each case
@@ -214,6 +242,9 @@ pub const Game = struct {
         rl.ClearBackground(rl.SKYBLUE);
         rl.ShowCursor();
 
+        // start camera
+        rl.BeginMode2D(self.camera);
+
         // draw tilemap first (background layer)
         if (self.tilemap) |*tm| {
             tm.draw();
@@ -224,6 +255,9 @@ pub const Game = struct {
         self.aim_circle.draw(self.player.position);
         self.projectile_manager.draw(self.textures.projectile);
         self.enemy_manager.draw(self.textures.enemy);
+
+        // end camera transform
+        rl.EndMode2D();
 
         // draw the ui elements
         self.ui.drawGameplayUI(&self.player, &self.playing_state.round_manager);

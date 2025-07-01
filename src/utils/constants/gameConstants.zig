@@ -6,6 +6,13 @@ const rl = @cImport({
 pub const WINDOW_WIDTH = 1280;
 pub const WINDOW_HEIGHT = 720;
 
+// camera
+pub const CAMERA_START_POS_X = WINDOW_WIDTH / 2; // center
+pub const CAMERA_START_POS_Y = WINDOW_HEIGHT / 2; // center
+pub const CAMERA_ROTATION = 0.0;
+pub const CAMERA_ZOOM = 1.2; // 20% zoom
+pub const CAMERA_SPEED = 0.05; // low for smoother, higher for responsive
+
 // sprite constants
 pub const PLAYER_SPRITE_SIZE = 32;
 pub const PLAYER_SPRITE_HALF_SIZE = PLAYER_SPRITE_SIZE / 2;
