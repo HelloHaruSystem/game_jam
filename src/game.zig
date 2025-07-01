@@ -35,6 +35,7 @@ pub const Game = struct {
     game_over_state: GameOverState,
     ui: UI,
     tilemap: ?TileMap,
+    camera: rl.Camera2D,
     input_delay_timer: f32,
     allocator: std.mem.Allocator,
 
@@ -56,6 +57,20 @@ pub const Game = struct {
             break :blk null;
         };
 
+        // initialize camera
+        const camera = rl.Camera2D{
+            .target = rl.Vector2{
+                .x = gameConst.CAMERA_START_POS_X,
+                .y = gameConst.CAMERA_START_POS_Y,
+            },
+            .offset = rl.Vector2{
+                .x = gameConst.CAMERA_START_POS_X,
+                .y = gameConst.CAMERA_START_POS_Y,
+            },
+            .rotation = gameConst.CAMERA_ROTATION,
+            .zoom = gameConst.CAMERA_ZOOM,
+        };
+
         return Game{
             .player = player,
             .textures = textures,
@@ -70,6 +85,7 @@ pub const Game = struct {
             .game_over_state = GameOverState.init(),
             .ui = ui,
             .tilemap = tilemap,
+            .camera = camera,
             .input_delay_timer = 0.0,
             .allocator = allocator,
         };
@@ -145,6 +161,7 @@ pub const Game = struct {
                     filtered_input,
                     delta_time,
                     if (self.tilemap) |*tm| tm else null,
+                    &self.camera,
                 );
                 if (next_state) |state| {
                     self.transitionToState(state);
@@ -167,6 +184,37 @@ pub const Game = struct {
                 // Quit state - do nothing, just let the main loop handle it
                 // The run() function will exit when it sees this state
             },
+        }
+
+        // camera following
+        if (self.current_state == .playing) {
+            const player_center = rl.Vector2{
+                .x = self.player.position.x + gameConst.PLAYER_SPRITE_HALF_SIZE,
+                .y = self.player.position.y + gameConst.PLAYER_SPRITE_HALF_SIZE,
+            };
+
+            // smooth camera following???
+            // Calculate desired camera target
+            var desired_target = rl.Vector2{
+                .x = self.camera.target.x + (player_center.x - self.camera.target.x) * gameConst.CAMERA_SPEED,
+                .y = self.camera.target.y + (player_center.y - self.camera.target.y) * gameConst.CAMERA_SPEED,
+            };
+
+            // calculate camera bounds based on zoom level
+            const camera_half_width = (@as(f32, @floatFromInt(gameConst.WINDOW_WIDTH)) / 2) / self.camera.zoom;
+            const camera_half_height = (@as(f32, @floatFromInt(gameConst.WINDOW_HEIGHT)) / 2) / self.camera.zoom;
+
+            // Clamp camera target to stay within map bounds
+            desired_target.x = std.math.clamp(desired_target.x, camera_half_width, // Left bound
+                gameConst.MAP_WORLD_WIDTH - camera_half_width // Right bound
+            );
+
+            desired_target.y = std.math.clamp(desired_target.y, camera_half_height, // Top bound
+                gameConst.MAP_WORLD_HEIGHT - camera_half_height // Bottom bound
+            );
+
+            // Apply the clamped target
+            self.camera.target = desired_target;
         }
     }
 
@@ -214,6 +262,9 @@ pub const Game = struct {
         rl.ClearBackground(rl.SKYBLUE);
         rl.ShowCursor();
 
+        // start camera
+        rl.BeginMode2D(self.camera);
+
         // draw tilemap first (background layer)
         if (self.tilemap) |*tm| {
             tm.draw();
@@ -221,9 +272,12 @@ pub const Game = struct {
 
         // draw game objects
         self.player.draw(self.textures.player);
-        self.aim_circle.draw(self.player.position);
+        self.aim_circle.draw(self.player.position, &self.camera);
         self.projectile_manager.draw(self.textures.projectile);
         self.enemy_manager.draw(self.textures.enemy);
+
+        // end camera transform
+        rl.EndMode2D();
 
         // draw the ui elements
         self.ui.drawGameplayUI(&self.player, &self.playing_state.round_manager);

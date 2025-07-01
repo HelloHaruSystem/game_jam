@@ -13,13 +13,14 @@ pub const AimCircle = struct {
     }
 
     // TODO: add some of these as constants
-    pub fn draw(self: *AimCircle, player_position: rl.Vector2) void {
-        const mouse_position = rl.GetMousePosition();
+    pub fn draw(self: *AimCircle, player_position: rl.Vector2, camera: *const rl.Camera2D) void {
+        const mouse_screen_position = rl.GetMousePosition();
+        const mouse_world_position = rl.GetScreenToWorld2D(mouse_screen_position, camera.*);
 
         // calculate direction from player to mouse
         // dx, dy = the difference between mouse and player positions
-        const dx = mouse_position.x - player_position.x;
-        const dy = mouse_position.y - player_position.y;
+        const dx = mouse_world_position.x - player_position.x;
+        const dy = mouse_world_position.y - player_position.y;
 
         // get angle in radians
         // using inverse tangent function
