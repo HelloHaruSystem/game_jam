@@ -33,24 +33,26 @@ pub const GameOverState = struct {
     }
 
     pub fn update(self: *GameOverState, input: Input) ?GameState {
-        // handle menu navigation
-        if (rl.IsKeyPressed(rl.KEY_UP) or input.move_up) {
+        _ = input;
+        
+        // Handle menu navigation - use only IsKeyPressed for clean single inputs
+        if (rl.IsKeyPressed(rl.KEY_UP) or rl.IsKeyPressed(rl.KEY_W)) {
             if (self.selected_option > 0) {
                 self.selected_option -= 1;
             }
         }
 
-        if (rl.IsKeyPressed(rl.KEY_DOWN) or input.move_down) {
+        if (rl.IsKeyPressed(rl.KEY_DOWN) or rl.IsKeyPressed(rl.KEY_S)) {
             if (self.selected_option < 2) {
                 self.selected_option += 1;
             }
-        }   
+        }
 
-        // handle navigation
-        if (rl.IsKeyPressed(rl.KEY_ENTER) or input.shoot) {
+        // Handle selection - use only IsKeyPressed
+        if (rl.IsKeyPressed(rl.KEY_ENTER) or rl.IsKeyPressed(rl.KEY_SPACE)) {
             switch (@as(GameOverOptions, @enumFromInt(self.selected_option))) {
                 .restart => {
-                    self.selected_option = 0;   // reset selection
+                    self.selected_option = 0;
                     return GameState.playing;
                 },
                 .main_menu => {
@@ -63,8 +65,6 @@ pub const GameOverState = struct {
                 },
             }
         }
-
         return null;
     }
-
 };
