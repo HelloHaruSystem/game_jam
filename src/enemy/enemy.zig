@@ -20,25 +20,25 @@ pub const EnemyType = enum {
                 .max_health = gameConstants.SMALL_ENEMY_HEALTH,
                 .speed = gameConstants.SMALL_ENEMY_SPEED,
                 .scale = gameConstants.SMALL_ENEMY_SCALE, // default is 0.8
-                .sprite_row = gameConstants.ENEMY_WALK_ROW,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW_YELLOW,
             },
             .medium_normal => EnemyStats{
                 .max_health = gameConstants.MEDIUM_ENEMY_HEALTH,
                 .speed = gameConstants.MEDIUM_ENEMY_SPEED,
                 .scale = gameConstants.MEDIUM_ENEMY_SCALE,
-                .sprite_row = gameConstants.ENEMY_WALK_ROW,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW_GREEN,
             },
             .large_slow => EnemyStats{
                 .max_health = gameConstants.LARGE_ENEMY_HEALTH,
                 .speed = gameConstants.LARGE_ENEMY_SPEED,
                 .scale = gameConstants.LARGE_ENEMY_SCALE,
-                .sprite_row = gameConstants.ENEMY_WALK_ROW,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW_YELLOW,
             },
             .boss => EnemyStats{
                 .max_health = gameConstants.BOSS_ENEMY_HEALTH,
                 .speed = gameConstants.BOSS_ENEMY_SPEED,
                 .scale = gameConstants.BOSS_ENEMY_SCALE,
-                .sprite_row = gameConstants.ENEMY_WALK_ROW,
+                .sprite_row = gameConstants.ENEMY_WALK_ROW_GREEN,
             },
         };
     }
