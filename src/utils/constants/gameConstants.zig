@@ -10,7 +10,7 @@ pub const WINDOW_HEIGHT = 720;
 pub const CAMERA_START_POS_X = WINDOW_WIDTH / 2; // center
 pub const CAMERA_START_POS_Y = WINDOW_HEIGHT / 2; // center
 pub const CAMERA_ROTATION = 0.0;
-pub const CAMERA_ZOOM = 1.2; // 20% zoom
+pub const CAMERA_ZOOM = 1.3; // 30% zoom
 pub const CAMERA_SPEED = 0.05; // low for smoother, higher for responsive
 
 // world bounds
