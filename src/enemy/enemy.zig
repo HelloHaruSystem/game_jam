@@ -4,6 +4,7 @@ const rl = @cImport({
 });
 
 const EnemyAnimation = @import("../animation/enemyAnimation.zig").EnemyAnimation;
+const Tilemap = @import("../tilemap/tilemap.zig").Tilemap;
 const gameConstants = @import("../utils/constants/gameConstants.zig");
 
 pub const EnemyType = enum {
@@ -17,7 +18,7 @@ pub const EnemyType = enum {
         return switch (self) {
             .small_fast => EnemyStats{
                 .max_health = gameConstants.SMALL_ENEMY_HEALTH,
-                .speed =gameConstants.SMALL_ENEMY_SPEED,
+                .speed = gameConstants.SMALL_ENEMY_SPEED,
                 .scale = gameConstants.SMALL_ENEMY_SCALE, // default is 0.8
                 .sprite_row = gameConstants.ENEMY_WALK_ROW,
             },
@@ -83,7 +84,7 @@ pub const Enemy = struct {
         };
     }
 
-    pub fn update(self: *Enemy, player_position: rl.Vector2, delta_time: f32) void {
+    pub fn update(self: *Enemy, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const Tilemap) void {
         if (!self.active) return;
 
         // calculate player center position
@@ -93,7 +94,7 @@ pub const Enemy = struct {
         };
 
         // move towards player
-        self.moveTowardsPlayer(player_center_position, delta_time);
+        self.moveTowardsPlayerWithCollision(player_center_position, delta_time, tilemap);
 
         // update hit flash timer
         self.animation.update(delta_time);
@@ -109,6 +110,109 @@ pub const Enemy = struct {
 
         // call draw function from the animation file
         self.animation.draw(self, texture);
+    }
+
+    fn moveTowardsPlayerWithCollision(self: *Enemy, player_position: rl.Vector2, delta_time: f32, tilemap: ?*const Tilemap) void {
+        // calculate direction to player
+        const dx = player_position.x - self.position.x;
+        const dy = player_position.y - self.position.y;
+        const distance = std.math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0) {
+            // update facing direction
+            self.facing_left = dx < 0;
+
+            // normalize direction and apply speed
+            const move_x = (dx / distance) * self.speed * delta_time;
+            const move_y = (dy / distance) * self.speed * delta_time;
+
+            if (tilemap) |tm| {
+                // Use tilemap collision
+                self.moveWithTileCollision(move_x, move_y, tm);
+            } else {
+                // Fallback to direct movement
+                self.velocity.x = (dx / distance) * self.speed;
+                self.velocity.y = (dy / distance) * self.speed;
+                self.position.x += self.velocity.x * delta_time;
+                self.position.y += self.velocity.y * delta_time;
+            }
+        }
+    }
+
+    fn moveWithTileCollision(self: *Enemy, move_x: f32, move_y: f32, tilemap: *const Tilemap) void {
+        // Try diagonal movement first
+        var new_position = rl.Vector2{
+            .x = self.position.x + move_x,
+            .y = self.position.y + move_y,
+        };
+
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position = new_position;
+            self.velocity.x = move_x / rl.GetFrameTime(); // Update velocity for consistency
+            self.velocity.y = move_y / rl.GetFrameTime();
+            return;
+        }
+
+        // If diagonal movement failed, try horizontal
+        new_position = rl.Vector2{
+            .x = self.position.x + move_x,
+            .y = self.position.y,
+        };
+
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position.x = new_position.x;
+            self.velocity.x = move_x / rl.GetFrameTime();
+            self.velocity.y = 0;
+            return;
+        }
+
+        // Try vertical movement
+        new_position = rl.Vector2{
+            .x = self.position.x,
+            .y = self.position.y + move_y,
+        };
+
+        if (self.isPositionValid(new_position, tilemap)) {
+            self.position.y = new_position.y;
+            self.velocity.x = 0;
+            self.velocity.y = move_y / rl.GetFrameTime();
+            return;
+        }
+
+        // If no movement is possible, stop
+        self.velocity.x = 0;
+        self.velocity.y = 0;
+    }
+
+    fn isPositionValid(self: *const Enemy, position: rl.Vector2, tilemap: *const Tilemap) void {
+        _ = self;
+
+        const sprite_size = gameConstants.ENEMY_SPRITE_SIZE;
+        const margin = 4.0;
+
+        // create collision box
+        const collision_box = rl.Rectangle{
+            .x = position.x + margin,
+            .y = position.y + margin,
+            .width = sprite_size - (margin * 2),
+            .height = sprite_size - (margin * 2),
+        };
+
+        // check the four corners of the collision box
+        const check_points = [_]rl.Vector2{
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y },
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y },
+            rl.Vector2{ .x = collision_box.x, .y = collision_box.y + collision_box.height },
+            rl.Vector2{ .x = collision_box.x + collision_box.width, .y = collision_box.y + collision_box.height },
+        };
+
+        for (check_points) |point| {
+            if (tilemap.isPositionSolid(point.x, point.y)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     pub fn moveTowardsPlayer(self: *Enemy, player_position: rl.Vector2, delta_time: f32) void {
